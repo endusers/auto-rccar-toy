@@ -1,0 +1,11 @@
+<!-- rccar-teleop-launch.xml -->
+
+<launch>
+  <node pkg="joy_linux" exec="joy_linux_node" name="rccar_joy_linux_node" output="both">
+    <param name="autorepeat_rate" value="10.0"/>
+    <param name="coalesce_interval" value="0.1"/>
+  </node>
+  <node pkg="teleop_twist_joy" exec="teleop_node" name="rccar_teleop_joy_node" output="both">
+    <param from="$(find-pkg-share rccar_teleop_joy)/config/rccar.config.yaml"/>
+  </node>
+</launch>

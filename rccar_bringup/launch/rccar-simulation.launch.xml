@@ -1,0 +1,17 @@
+<!-- rccar-simulation.launch.xml -->
+
+<launch>
+  <arg name="use_sim_time" default="true"/>
+
+  <include file="$(find-pkg-share rccar_gazebo)/launch/rccar-gazebo.launch.py">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+  </include>
+
+  <include file="$(find-pkg-share rccar_bringup)/launch/rccar-initial-odometry.launch.xml">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+  </include>
+
+  <include file="$(find-pkg-share rccar_bringup)/launch/rccar-camera.launch.xml">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+  </include>
+</launch>

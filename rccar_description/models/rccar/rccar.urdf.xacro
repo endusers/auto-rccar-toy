@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+
+<robot name="rccar" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find rccar_description)/models/rccar/common_properties.xacro" />
+  <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro" />
+  <xacro:include filename="$(find rccar_description)/models/rccar/rccar.gazebo.urdf.xacro" />
+
+  <xacro:property name="wheel_diameter" value="0.090" />
+  <xacro:property name="wheel_thickness" value="0.0335" />
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.123" rpy="0 0 0" />
+      <geometry>
+        <box size="0.385 0.195 0.057" />
+      </geometry>
+      <material name="green"/>
+    </visual>
+    <visual>
+      <origin xyz="0.0775 0.0 0.183" rpy="0 0 0" />
+      <geometry>
+        <box size="0.110 0.195 0.063" />
+      </geometry>
+      <material name="green"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.1925 -0.0975 0.0945" rpy="0 0 0" />
+      <geometry>
+        <box size="0.385 0.195 0.120" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.5" />
+      <xacro:box_inertia m="1.5" x="0.385" y="0.195" z="0.120" />
+    </inertial>
+  </link>
+
+  <link name="gps_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.055 0.060 0.0225" />
+      </geometry>
+      <material name="black"/>
+    </visual>
+  </link>
+
+  <joint name="base_link_to_gps_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="gps_link" />
+    <origin xyz="-0.1375 0.0 0.125" rpy="0 0 0"/>
+  </joint>
+
+  <!--
+  <link name="camera_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.025 0.090 0.025" />
+      </geometry>
+      <material name="white"/>
+    </visual>
+  </link>
+
+  <joint name="base_link_to_camera_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_link" />
+    <origin xyz="0.09615 0.0 0.185" rpy="0 0 0"/>
+  </joint>
+  -->
+
+  <xacro:sensor_d435i parent="base_link" use_nominal_extrinsics="true" use_mesh="false">
+    <origin xyz="0.09615 0.0 0.185" rpy="0 0 0"/>
+  </xacro:sensor_d435i>
+
+  <xacro:macro name="wheel" params="prefix suffix x y z mode">
+    <link name="${prefix}_${suffix}_mount">
+      <visual>
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="${wheel_diameter/2}" length="0.01"/>
+        </geometry>
+        <material name="grey" />
+      </visual>
+      <collision>
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="${wheel_diameter/2}" length="0.01" />
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="8.0" />
+        <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_${suffix}_mount_joint" type="${mode}">
+      <parent link="base_link" />
+      <child link="${prefix}_${suffix}_mount" />
+      <axis xyz="0 0 1" rpy="0 0 0" />
+      <origin xyz="${x} ${y} ${z}" rpy="0 0 0" />
+      <!--<dynamics damping="0.0" friction="0.01" />-->
+      <limit lower="-0.6458" upper="0.6458" effort="4.2" velocity="6.28" />
+      <!--<limit lower="-0.6458" upper="0.6458" effort="0.5" velocity="6.28" />-->
+    </joint>
+
+    <link name="${prefix}_${suffix}_wheel">
+      <visual>
+        <origin xyz="0.0 0.0 0.0" rpy="${M_PI/2} 0 0" />
+        <geometry>
+          <cylinder radius="${wheel_diameter/2}" length="${wheel_thickness}" />
+        </geometry>
+        <material name="darkgrey" />
+      </visual>
+      <collision>
+          <origin xyz="0.0 0.0 0.0" rpy="${M_PI/2} 0 0" />
+          <geometry>
+            <cylinder radius="${wheel_diameter/2}" length="${wheel_thickness}"/>
+          </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.5" />
+        <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+      <!--
+      <inertial>
+        <mass value="0.1" />
+        <xacro:cylinder_inertia m="0.1" r="${wheel_diameter/2}" h="${wheel_thickness}" />
+      </inertial>
+      -->
+    </link>
+
+    <joint name="${prefix}_${suffix}_wheel_joint" type="continuous">
+      <parent link="${prefix}_${suffix}_mount"/>
+      <child link="${prefix}_${suffix}_wheel"/>
+      <axis xyz="0 1 0" rpy="0 0 0" />
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <!--<dynamics damping="0.0" friction="0.01" />-->
+    </joint>
+
+    <gazebo reference="${prefix}_${suffix}_mount">
+      <material>Gazebo/Grey</material>
+    </gazebo>
+    <gazebo reference="${prefix}_${suffix}_wheel">
+      <material>Gazebo/DarkGrey</material>
+    </gazebo>
+  </xacro:macro>
+
+  <!--
+  <xacro:wheel prefix="front" suffix="left" x="0.1215" y="0.08075" z="${wheel_diameter/2}" mode="continuous" />
+  <xacro:wheel prefix="front" suffix="right" x="0.1215" y="-0.08075" z="${wheel_diameter/2}" mode="continuous" />
+  -->
+  <xacro:wheel prefix="front" suffix="left" x="0.1215" y="0.08075" z="${wheel_diameter/2}" mode="revolute" />
+  <xacro:wheel prefix="front" suffix="right" x="0.1215" y="-0.08075" z="${wheel_diameter/2}" mode="revolute" />
+  <xacro:wheel prefix="rear" suffix="left" x="-0.1235" y="0.08075" z="${wheel_diameter/2}" mode="fixed" />
+  <xacro:wheel prefix="rear" suffix="right" x="-0.1235" y="-0.08075" z="${wheel_diameter/2}" mode="fixed" />
+
+</robot>

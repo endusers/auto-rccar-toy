@@ -1,0 +1,5 @@
+initial_odometry_node:
+  ros__parameters:
+      # The fields in the parameter represent x and y , and yaw in degrees.
+      # As yaw assumes an ENU standard, a 0 heading corresponds to east.
+      initial_pose: [0.0, 0.0, 0.0]
