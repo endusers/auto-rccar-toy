@@ -1,17 +1,27 @@
 #!/bin/bash
 
+WORKSPACE=~/rccar_ws
+INSTALL_RTKLIB=OFF
+while getopts w:r- OPT
+do
+    if [ ${OPT} = w ]
+    then
+        WORKSPACE=${OPTARG}
+    elif [ ${OPT} = r ]
+    then
+        INSTALL_RTKLIB=ON
+    else
+        break
+    fi
+done
+shift `expr ${OPTIND} - 1`
+
 CURRENT_DIR=`pwd`
 
 cd `dirname $0`
 SCRIPTS_DIR=`pwd`
 DIR=`dirname ${SCRIPTS_DIR}`
 echo ${DIR}
-
-WORKSPACE=~/rccar_ws
-if [ $# -ge 1 ]
-then
-    WORKSPACE=$1
-fi
 
 cd ${CURRENT_DIR}
 mkdir -p ${WORKSPACE}/src
@@ -108,3 +118,16 @@ cd ${WORKSPACE}
 rosdep update
 rosdep install -y --from-paths ./src --ignore-src
 colcon build --symlink-install
+
+# RTKLIB
+if [ ${INSTALL_RTKLIB} = ON ]
+then
+    cd ~/
+    git clone -b rtklib_2.4.3 'https://github.com/tomojitakasu/RTKLIB.git'
+    cd ~/RTKLIB/lib/iers/gcc/
+    make
+    cd ~/RTKLIB/app/consapp
+    make
+
+    cp -f ${DIR}/scripts/rtklib-str2str.sh ${WORKSPACE}
+fi
