@@ -1,3 +1,14 @@
+/**
+ * @file initial_odometry.cpp
+ * 
+ * @brief       initial_odometry
+ * @note        なし
+ * 
+ * @version     1.0.0
+ * @date        2023/03/26
+ * 
+ * @copyright   (C) 2023 Motoyuki Endo
+ */
 #include "initial_odometry/initial_odometry.hpp"
 
 using namespace std::chrono_literals;

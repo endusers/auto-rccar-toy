@@ -1,3 +1,14 @@
+/**
+ * @file initial_odometry.hpp
+ * 
+ * @brief       initial_odometry
+ * @note        なし
+ * 
+ * @version     1.0.0
+ * @date        2023/03/26
+ * 
+ * @copyright   (C) 2023 Motoyuki Endo
+ */
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
