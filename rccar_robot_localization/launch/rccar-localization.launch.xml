@@ -1,0 +1,13 @@
+<!-- rccar-localization.launch.xml -->
+
+<launch>
+  <arg name="use_sim_time" default="false"/>
+
+  <include file="$(find-pkg-share rccar_robot_localization)/launch/rccar-ekf.launch.py">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+  </include>
+
+  <include file="$(find-pkg-share rccar_robot_localization)/launch/rccar-navsat-transform.launch.py">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+  </include>
+</launch>

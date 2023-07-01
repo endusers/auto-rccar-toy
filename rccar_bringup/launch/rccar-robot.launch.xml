@@ -1,0 +1,11 @@
+<!-- rccar-robot-launch.xml -->
+
+<launch>
+  <include file="$(find-pkg-share rccar_description)/launch/rccar-robot-state-publisher.launch.py" />
+
+  <include file="$(find-pkg-share rccar_bringup)/launch/rccar-micro-ros-agent.launch.py" />
+  <!-- <include file="$(find-pkg-share rccar_bringup)/launch/rccar-bno055.launch.py" /> -->
+  <include file="$(find-pkg-share rccar_bringup)/launch/rccar-ublox-gps-node.launch.py" />
+
+  <include file="$(find-pkg-share rccar_bringup)/launch/rccar-initial-odometry.launch.xml" />
+</launch>

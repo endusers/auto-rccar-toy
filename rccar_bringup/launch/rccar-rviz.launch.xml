@@ -1,0 +1,8 @@
+<!-- rccar-robot-launch.xml -->
+
+<launch>
+  <arg name="rviz_config_file" default="$(find-pkg-share rccar_navigation2)/rviz/rccar.rviz"/>
+
+  <node pkg="rviz2" exec="rviz2" name="rviz2_node" output="both" args="-d $(var rviz_config_file)">
+  </node>
+</launch>

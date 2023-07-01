@@ -1,0 +1,10 @@
+<!-- initial-odometry.launch.xml -->
+
+<launch>
+  <arg name="use_sim_time" default="false"/>
+
+  <node pkg="initial_odometry" exec="initial_odometry" name="initial_odometry_node" output="both">
+    <param from="$(find-pkg-share initial_odometry)/config/initial_odom.yaml"/>
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+</launch>
