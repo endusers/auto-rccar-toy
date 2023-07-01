@@ -20,11 +20,11 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
-        default_value=os.path.join(
-            get_package_share_directory('rccar_navigation2'), 'map', 'empty_100m.yaml' ),
-            #get_package_share_directory('rccar_navigation2'), 'map', 'empty_1000m.yaml' ),
-            #get_package_share_directory('rccar_navigation2'), 'map', 'smalltown_world.yaml' ),
-        description='Full path to map yaml file to load')
+        default_value=
+            'empty_100m.yaml',
+            #'empty_1000m.yaml',
+            #'smalltown_world.yaml',
+        description='File name for map yaml file to load')
 
     declare_autostart_cmd = DeclareLaunchArgument(
         'autostart', default_value='true',
@@ -44,7 +44,7 @@ def generate_launch_description():
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
 
-    map_yaml_file = LaunchConfiguration('map')
+    map_yaml_file = [ os.path.join( get_package_share_directory('rccar_navigation2'), 'map', '' ), LaunchConfiguration('map') ] 
     autostart = LaunchConfiguration('autostart')
     params_file = LaunchConfiguration('params_file')
     default_bt_xml_filename = LaunchConfiguration('default_bt_xml_filename')

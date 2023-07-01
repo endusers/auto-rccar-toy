@@ -4,6 +4,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
@@ -14,9 +15,12 @@ def generate_launch_description():
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
 
-    world_file_name = 'empty.world'
-    #world_file_name = 'smalltown.world'
-    world = os.path.join(get_package_share_directory('rccar_gazebo'), 'worlds', world_file_name)
+    declare_world_file_cmd = DeclareLaunchArgument(
+        'world',
+        default_value='empty.world',
+        description='File name for world file to load')
+
+    world_file = [ os.path.join( get_package_share_directory('rccar_gazebo'), 'worlds', '' ), LaunchConfiguration('world') ]
     pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
     pkg_robot_description = get_package_share_directory('rccar_description')
     robot_name_in_model = 'rccar'
@@ -35,7 +39,7 @@ def generate_launch_description():
             os.path.join(pkg_gazebo_ros, 'launch', 'gzserver.launch.py')
         ),
         launch_arguments={
-            'world': world,
+            'world': world_file,
             'debug': 'true',
             'verbose': 'true',
         }.items(),
@@ -69,6 +73,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        declare_world_file_cmd,
         gzserver_node,
         gzclient_node,
         robot_state_publisher_node,

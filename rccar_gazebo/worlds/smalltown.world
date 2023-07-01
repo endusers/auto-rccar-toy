@@ -4035,7 +4035,7 @@
 
     <!-- Define the physics of the world -->    
     <gravity>0 0 -9.8</gravity>
-    <magnetic_field>-4.448e-06 3.0472e-05 3.5002e-05</magnetic_field>
+    <magnetic_field>-4.443e-06 2.9360e-05 3.8291e-05</magnetic_field>
     <!--<magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>-->
     <atmosphere type='adiabatic'/>
     <physics name='default_physics' default='0' type='ode'>
@@ -4061,8 +4061,8 @@
       <longitude_deg>-84.42</longitude_deg>
       <elevation>254.99568</elevation>
       -->
-      <latitude_deg>35.086310997169356</latitude_deg>
-      <longitude_deg>137.1658487863691</longitude_deg>
+      <latitude_deg>35.362979</latitude_deg>
+      <longitude_deg>137.193920</longitude_deg>
       <elevation>0.0</elevation>
       <!-- currently gazebo has a bug: instead of outputing lat, long, altitude in ENU
       (x = East, y = North and z = Up) as the default configurations, it's outputting (-E)(-N)U,
