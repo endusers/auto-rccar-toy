@@ -23,18 +23,28 @@
 
 - ハードウェア
 
-  - 1/10RC メルセデス・ベンツ ウニモグ 406 (CC-02シャーシ)
-  - OP.1895 タミヤ ブラシレスモーター 02 センサー付 21.5T
-  - タミヤ ブラシレス エレクトロニック スピードコントローラー 04SR センサー付
-  - Jetson Xavier NX
-  - M5 ATOM Matrix
-  - Ublox F9P
-  - Ublox アンテナ
-  - Realsense D435i
-  - バッテリー
-  - バッテリー
-
-  - その他配線や部品
+  - RCカー
+    - 1/10RC メルセデス・ベンツ ウニモグ 406 (CC-02シャーシ)
+    - OP.1895 タミヤ ブラシレスモーター 02 センサー付 21.5T
+    - タミヤ ブラシレス エレクトロニック スピードコントローラー 04SR センサー付
+    - タミヤ AO-5052 TSU-03サーボ
+    - バッテリー(G-FORCE BULLET LiPo 7.4V 3000mAh)
+    - M5 ATOM Matrix
+  - Jetson
+    - Jetson Xavier NX
+    - Seeed Studio A203 (Version 2) Carrier Board for Jetson Nano/Xavier NX
+    - バッテリー(Anker PowerCore 10000 PD Redux 25W)
+    - PDトリガーケーブル(WITRN PDC003 20V)
+    - FAN(Jetson NX モジュール用)
+    - WiFi(Intel Dual Band Wireless-AC 8265 8265NGW)
+    - WiFi アンテナ(BOOBRIE ワイヤレスモジュール小型WIFIアンテナ)
+    - SSD(Oemgenuine Kioxia 256GB M.2 PCI-e NVME SSD 内蔵 5SS0V26415)
+  - センサ
+    - Realsense D435i
+    - Ublox F9P
+    - Ublox 2周波対応 アンテナ(ANN-MB-00)
+  - その他
+    - その他配線や部品
 
 - ソフトウェア
 
@@ -170,3 +180,14 @@ T.B.A
 
 ※ワークスペースディレクトリへのパスの指定は省略しています  
 ※ターミナル起動毎に設定、または、 .bashrc に追加して対応してください  
+
+## 参考
+
+- Docker環境について
+
+    本ソフトを動かすためのROSのDocker環境を下記ディレクトリにサブモジュールとして登録済み  
+    詳細は下記リポジトリを参照してください  
+
+    [auto-rccar-toy/env/foxy-official-01](https://github.com/endusers/foxy-official-01)  
+
+    物理PCにセットアップしたい場合で必要となるパッケージは [Dockerfile](https://github.com/endusers/foxy-official-01/blob/main/ros-foxy-official/Dockerfile) を参照してください  
