@@ -1,10 +1,10 @@
-<!-- ①パスの定期的な再計算はしない                                                      -->
-<!--   ゴール判定で「Reached the goal!」&「Navigation succeeded」とするため              -->
-<!--   GoalReachedがSUCCEEDEDのときにComputePathToPoseをコールする                      -->
+<!-- ①パスの定期的な再計算はしない                                                       -->
+<!--   ゴール判定で「Reached the goal!」&「Navigation succeeded」とするため               -->
+<!--   GoalReachedがSUCCEEDEDのときにComputePathToPoseをコールする                        -->
 <!-- ②ゴールの更新はhumbleのプラグインを使用                                             -->
-<!--   foxyのGoalUpdatedでは実現ができなさそうなためhumbleのGlobalUpdatedGoalを使って対応   -->
-<!-- ③障害物など検出時は事象がクリアされるまで待機(最大5分)                                 -->
-<!--   待機中はコストマップと再計算を定期的に実施(3s周期)                                   -->
+<!--   foxyのGoalUpdatedでは実現ができなさそうなためhumbleのGlobalUpdatedGoalを使って対応 -->
+<!-- ③障害物など検出時は事象がクリアされるまで待機(最大5分)                              -->
+<!--   待機中はコストマップと再計算を定期的に実施(3s周期)                                 -->
 
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
