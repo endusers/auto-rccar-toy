@@ -1,0 +1,12 @@
+<!-- route-publisher.launch.xml -->
+
+<launch>
+  <arg name="use_sim_time" default="false"/>
+
+  <node pkg="route_publisher" exec="route_publisher" name="route_publisher_node" output="both">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="utm_frame" value="utm"/>
+    <param name="map_frame" value="map"/>
+    <param name="reach_range" value="0.5"/>
+  </node>
+</launch>
