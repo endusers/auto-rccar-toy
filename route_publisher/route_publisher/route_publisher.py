@@ -255,14 +255,16 @@ class RoutePublisher(Node):
                 self.isGoalAccepted = False
                 self.sendGoal( self.path.poses[self.index] )
 
-    def responseCallback( self, msg ):
-        self.navi_handle = msg.result()
+    def responseCallback( self, future ):
+        navi_handle = future.result()
 
-        if not self.navi_handle.accepted:
+        if not navi_handle.accepted:
             str = f'Navigate point rejected {self.index + 1}/{len(self.path.poses)}'
             self.lblStatus.setText( str )
             self.get_logger().info( str )
             return
+
+        self.navi_handle = navi_handle
 
         self.isGoalAccepted = True
         str = f'Navigating point {self.index + 1}/{len(self.path.poses)}'
@@ -272,9 +274,9 @@ class RoutePublisher(Node):
         navi_result = self.navi_handle.get_result_async()
         navi_result.add_done_callback( self.resultCallback )
 
-    def resultCallback( self, msg ):
-        result = msg.result().result
-        status = msg.result().status
+    def resultCallback( self, future ):
+        #status = future.result().status
+        status = self.navi_handle.status
 
         if status == action_msgs.msg.GoalStatus.STATUS_SUCCEEDED:
             if self.index >= len(self.path.poses) - 1:
