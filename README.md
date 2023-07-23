@@ -54,11 +54,9 @@
 
   - m5stack-rccar-toy
 
-  - ROS2 Package
-    - micro_ros_agent
-    - joy_linux
-    - teleop_twist_key
-    - teleop_twist_joy
+  - Package
+
+    必要となるパッケージは [Dockerfile](https://github.com/endusers/foxy-official-01/blob/main/ros-foxy-official/Dockerfile) を参照してください  
 
 ## 構成図
 
@@ -134,6 +132,10 @@ T.B.A
     ros2 launch rccar_bringup rccar-rviz.launch.xml
     ```
 
+1. 経路を設定して自律走行を開始する
+
+    [経路設定](#経路設定) 参照
+
 ※ワークスペースディレクトリへのパスの指定は省略しています  
 ※ターミナル起動毎に設定、または、 .bashrc に追加して対応してください  
 
@@ -178,8 +180,39 @@ T.B.A
     ros2 launch rccar_bringup rccar-rviz.launch.xml
     ```
 
+1. 経路を設定して自律走行を開始する
+
+    [経路設定](#経路設定) 参照
+
 ※ワークスペースディレクトリへのパスの指定は省略しています  
 ※ターミナル起動毎に設定、または、 .bashrc に追加して対応してください  
+
+## 経路設定
+
+1. 自立走行させる経路を[Googole My Maps](https://www.google.com/maps/d)で設定する
+
+    経路は順番に設定したいポイントを「マーカーを追加」にて設定する
+
+2. 設定した経路をCSVでエクスポートする
+
+    「レイヤオプション」-「データを書き出す」-「CSV」からエクスポートする
+
+3. ルート配信アプリを立ち上げる
+
+    ```bash
+    ros2 launch route_publisher route-publisher.launch.xml
+    ```
+
+4. ルート配信アプリに経路を読み込む
+
+    「FileSelect」ボタンを押してGoogle My MapsでエクスポートしたCSVファイルを選択する
+
+5. ルート配信アプリで自律走行を開始する
+
+    「NaviStart」ボタンを押して自律走行を開始する
+
+※サンプルのCSVファイルは「route_publisher」-「route」-「toki-route-001.csv」にあります  
+※CSVファイルは、WKT(Well-known text)のPOINTのフォーマットを読み込みます  
 
 ## 参考
 
