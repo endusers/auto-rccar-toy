@@ -52,7 +52,7 @@
   - micro-ROS
   - RTKLIB
 
-  - m5stack-rccar-toy
+  - [m5stack-rccar-toy](https://github.com/endusers/m5stack-rccar-toy)
 
   - Package
 
@@ -212,6 +212,7 @@ T.B.A
     「NaviStart」ボタンを押して自律走行を開始する
 
 ※サンプルのCSVファイルは「route_publisher」-「route」-「toki-route-001.csv」にあります  
+※サンプルのCSVファイルを使用するときは「empty.world」「empty_100m.yaml」を使用してください  
 ※CSVファイルは、WKT(Well-known text)のPOINTのフォーマットを読み込みます  
 
 ## 参考
