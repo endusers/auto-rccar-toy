@@ -14,8 +14,11 @@ import threading
 from typing import List
 import math
 import rclpy
+from rclpy.publisher import Publisher
+from rclpy.subscription import Subscription
 from rclpy.node import Node
 from rclpy.action import ActionClient
+from rclpy.timer import Timer
 import geographic_msgs.msg
 import geometry_msgs.msg
 import nav_msgs.msg
@@ -27,6 +30,8 @@ import PyKDL
 import pandas
 import geopandas
 from pyproj import Proj
+from shapely.geometry import Point, LineString
+from shapely.ops import nearest_points
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog
 
 
@@ -42,6 +47,7 @@ class RoutePublisher(Node):
         self.utms : List[geometry_msgs.msg.PoseStamped] = None
         self.poses : List[geometry_msgs.msg.PoseStamped] = None
         self.path : nav_msgs.msg.Path = None
+        self.odom : nav_msgs.msg.Odometry = None
         self.utm_frame : string = ''
         self.map_frame : string = ''
         self.reach_range : float = 0.5
@@ -54,18 +60,19 @@ class RoutePublisher(Node):
         self.map_frame = self.get_parameter( "map_frame" ).value
         self.reach_range = self.get_parameter( "reach_range" ).value
 
-        self.tf_buffer = tf2_ros.Buffer()
-        self.tf_listener = tf2_ros.TransformListener( self.tf_buffer, self )
+        self.tf_buffer : tf2_ros.Buffer = tf2_ros.Buffer()
+        self.tf_listener : tf2_ros.TransformListener = tf2_ros.TransformListener( self.tf_buffer, self )
 
-        self.publisher_ = self.create_publisher( nav_msgs.msg.Path, 'route', 10 )
+        self.pubRoute : Publisher = self.create_publisher( nav_msgs.msg.Path, 'route', 10 )
+        self.subOdom : Subscription = self.create_subscription( nav_msgs.msg.Odometry, 'odometry/global', self.odomCallback,10 )
 
-        self.nav2_client = ActionClient( self, NavigateToPose, 'navigate_to_pose' )
+        self.nav2_client : ActionClient = ActionClient( self, NavigateToPose, 'navigate_to_pose' )
 
-        self.timer = self.create_timer( CONTROLER_MAIN_CYCLE, self.mainLoop )
+        self.timer : Timer = self.create_timer( CONTROLER_MAIN_CYCLE, self.mainLoop )
 
         self.index : int = 0
         self.isRouteValid : bool = False
-        self.isGoalAccepted = False
+        self.isGoalAccepted : bool = False
         self.navi_handle = None
 
     def mainLoop(self):
@@ -185,30 +192,32 @@ class RoutePublisher(Node):
         self.path = None
 
         if self.isRouteValid:
-            # for foxy (for geometry_msgs/Pose)
-            utms : List[geometry_msgs.msg.Pose] = None
-            utms = list()
-            for utm in self.utms:
-                pose = utm.pose
-                utms.append( pose )
-
             try:
                 transform = self.tf_buffer.lookup_transform(
                     self.map_frame, self.utm_frame, rclpy.time.Time(),
                     timeout=rclpy.time.Duration(seconds=10)
                 )
 
-                # for geometry_msgs/Pose
+                # tf2 interface is geometry_msgs/Pose(for foxy)
+                utms : List[geometry_msgs.msg.Pose] = None
+                utms = list()
+                for utm in self.utms:
+                    pose = utm.pose
+                    utms.append( pose )
+
+                # tf2 interface is geometry_msgs/Pose(for foxy)
                 for utm in utms:
                     pose = tf2_geometry_msgs.do_transform_pose( utm, transform )
                     posestamp = geometry_msgs.msg.PoseStamped()
                     posestamp.pose = pose
                     self.poses.append( posestamp )
 
-                # for geometry_msgs/PoseStamped
-                #for utm in self.utms:
+                # tf2 interface is geometry_msgs/PoseStamped
+                # for utm in self.utms:
                 #    posestamp = tf2_geometry_msgs.do_transform_pose( utm, transform )
                 #    self.poses.append( posestamp )
+
+                self.cutRoute()
 
                 self.path = nav_msgs.msg.Path()
                 self.path.header.stamp = self.get_clock().now().to_msg()
@@ -218,7 +227,7 @@ class RoutePublisher(Node):
                     pose.header.stamp = self.path.header.stamp
                     pose.header.frame_id = self.map_frame
 
-                self.publisher_.publish( self.path )
+                self.pubRoute.publish( self.path )
 
                 self.index = 0
                 self.isGoalAccepted = False
@@ -234,6 +243,53 @@ class RoutePublisher(Node):
     def stopNavigation(self):
         if self.navi_handle is not None:
             self.navi_handle.cancel_goal_async()
+
+    def cutRoute( self ):
+        pose : geometry_msgs.msg.Pose = self.odom.pose.pose
+        now_x : float = pose.position.x
+        now_y : float = pose.position.y
+
+        wp_index : int = 0
+        nearest_point : Point = Point( now_x, now_y )
+        nearest_distance : float = sys.float_info.max
+
+        i = 0
+        while i < len(self.poses) - 1:
+            wp_x = self.poses[i].pose.position.x
+            wp_y = self.poses[i].pose.position.y
+            wp_next_x = self.poses[i+1].pose.position.x
+            wp_next_y = self.poses[i+1].pose.position.y
+
+            point = Point( now_x, now_y )
+            line = LineString([(wp_x, wp_y), (wp_next_x, wp_next_y)])
+
+            _, nearest_line = nearest_points( point, line )
+
+            distance = math.hypot(nearest_line.x - now_x, nearest_line.y - now_y)
+
+            if distance <= nearest_distance:
+                nearest_distance = distance
+                wp_index = i
+                nearest_point = nearest_line
+
+            i = i + 1
+
+        dx = self.poses[wp_index + 1].pose.position.x - nearest_point.x
+        dy = self.poses[wp_index + 1].pose.position.y - nearest_point.y
+        theta = math.atan2(dy, dx)
+        q = PyKDL.Rotation.RPY( 0.0, 0.0, theta ).GetQuaternion()
+
+        del self.poses[:(wp_index + 1)]
+
+        posestamp = geometry_msgs.msg.PoseStamped()
+        posestamp.pose.position.x = nearest_point.x
+        posestamp.pose.position.y = nearest_point.y
+        posestamp.pose.position.z = 0.0
+        posestamp.pose.orientation.x = q[0]
+        posestamp.pose.orientation.x = q[1]
+        posestamp.pose.orientation.z = q[2]
+        posestamp.pose.orientation.w = q[3]
+        self.poses.insert( 0, posestamp )
 
     def sendGoal( self, posestamp ):
 
@@ -278,6 +334,10 @@ class RoutePublisher(Node):
         #status = future.result().status
         status = self.navi_handle.status
 
+        self.get_logger().info( f'1 {future}' )
+        self.get_logger().info( f'2 {future.result()}' )
+        self.get_logger().info( f'3 cancelled : {future.cancelled()}' )
+
         if status == action_msgs.msg.GoalStatus.STATUS_SUCCEEDED:
             if self.index >= len(self.path.poses) - 1:
                 self.navi_handle = None
@@ -296,3 +356,6 @@ class RoutePublisher(Node):
             self.get_logger().info( str )
         else:
             pass
+
+    def odomCallback( self, msg ):
+        self.odom = msg
