@@ -3,13 +3,13 @@
 <!--   GoalReachedがSUCCEEDEDのときにComputePathToPoseをコールする                        -->
 <!-- ②ゴールの更新はhumbleのプラグインを使用                                             -->
 <!--   foxyのGoalUpdatedでは実現ができなさそうなためhumbleのGlobalUpdatedGoalを使って対応 -->
-<!-- ③障害物など検出時は事象がクリアされるまで待機(最大5分)                              -->
-<!--   待機中はコストマップと再計算を定期的に実施(3s周期)                                 -->
+<!-- ③経路の再計算ができない場合は事象がクリアされるまで待機(リトライ100回)              -->
+<!--   待機中は再計算を定期的に実施(3s周期)                                               -->
 
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
     <PipelineSequence name="NavigateWithReplanning">
-      <RateController hz="5.0">
+      <RateController hz="10.0">
         <Fallback>
           <Sequence>
             <GoalReached goal="{goal}" />
@@ -28,19 +28,14 @@
         </Fallback>
       </RateController>
       <RecoveryNode number_of_retries="100" name="NavigateWithReplanning">
-        <Fallback>
-          <FollowPath path="{path}" controller_id="FollowPath"/>
-          <ForceFailure>
-            <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
-          </ForceFailure>
-          <ForceFailure>
+        <FollowPath path="{path}" controller_id="FollowPath"/>
+        <Sequence>
+          <Wait wait_duration="3" />
+          <RecoveryNode number_of_retries="100" name="ComputePathToPose">
             <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
-          </ForceFailure>
-          <ForceFailure>
-            <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
-          </ForceFailure>
-        </Fallback>
-        <Wait wait_duration="3" />
+            <Wait wait_duration="3" />
+          </RecoveryNode>
+        </Sequence>
       </RecoveryNode>
     </PipelineSequence>
   </BehaviorTree>
