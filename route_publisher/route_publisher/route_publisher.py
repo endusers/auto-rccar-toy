@@ -229,7 +229,17 @@ class RoutePublisher(Node):
 
                 self.pubRoute.publish( self.path )
 
+                pose : geometry_msgs.msg.Pose = self.odom.pose.pose
+                now_x : float = pose.position.x
+                now_y : float = pose.position.y
+
+                dx : float = self.poses[0].pose.position.x - now_x
+                dy : float = self.poses[0].pose.position.y - now_y
+                distance : float = math.hypot(dx, dy)
+
                 self.index = 0
+                if distance < self.reach_range:
+                    self.index = self.index + 1
                 self.isGoalAccepted = False
                 self.navi_handle = None
                 self.sendGoal( self.path.poses[self.index] )
