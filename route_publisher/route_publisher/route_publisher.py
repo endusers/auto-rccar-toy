@@ -3,11 +3,11 @@
 
 # The MIT License
 
-# Copyright (c) 2023 Motoyuki Endo
+# Copyright (c) 2023-2024 Motoyuki Endo
 # Released under the MIT license
 # http://opensource.org/licenses/mit-license.php
 
-# Copyright (c) 2001-2023 Python Software Foundation; All Rights Reserved
+# Copyright (c) 2001-2024 Python Software Foundation; All Rights Reserved
 
 import sys
 import threading
@@ -25,7 +25,7 @@ import nav_msgs.msg
 import action_msgs.msg
 import tf2_ros
 import tf2_geometry_msgs
-from nav2_msgs.action import NavigateToPose
+from nav2_msgs.action import NavigateThroughPoses
 import PyKDL
 import pandas
 import geopandas
@@ -66,14 +66,14 @@ class RoutePublisher(Node):
         self.pubRoute : Publisher = self.create_publisher( nav_msgs.msg.Path, 'route', 10 )
         self.subOdom : Subscription = self.create_subscription( nav_msgs.msg.Odometry, 'odometry/global', self.odomCallback,10 )
 
-        self.nav2_client : ActionClient = ActionClient( self, NavigateToPose, 'navigate_to_pose' )
+        self.nav2_client : ActionClient = ActionClient( self, NavigateThroughPoses, 'navigate_through_poses' )
 
         self.timer : Timer = self.create_timer( CONTROLER_MAIN_CYCLE, self.mainLoop )
 
-        self.index : int = 0
         self.isRouteValid : bool = False
-        self.isGoalAccepted : bool = False
         self.navi_handle = None
+
+        self.timLabelStatusUpdate : rclpy.time.Time = self.get_clock().now() + rclpy.duration.Duration(seconds=1.0)
 
     def mainLoop(self):
 
@@ -194,7 +194,7 @@ class RoutePublisher(Node):
         if self.isRouteValid:
             try:
                 transform = self.tf_buffer.lookup_transform(
-                    self.map_frame, self.utm_frame, rclpy.time.Time(),
+                    self.map_frame, self.utm_frame, self.get_clock().now(),
                     timeout=rclpy.time.Duration(seconds=10)
                 )
 
@@ -233,16 +233,14 @@ class RoutePublisher(Node):
                 now_x : float = pose.position.x
                 now_y : float = pose.position.y
 
-                dx : float = self.poses[0].pose.position.x - now_x
-                dy : float = self.poses[0].pose.position.y - now_y
+                dx : float = self.path.poses[0].pose.position.x - now_x
+                dy : float = self.path.poses[0].pose.position.y - now_y
                 distance : float = math.hypot(dx, dy)
 
-                self.index = 0
-                if distance < self.reach_range:
-                    self.index = self.index + 1
-                self.isGoalAccepted = False
+                # if distance < self.reach_range:
+                #     del self.path.poses[:1]
                 self.navi_handle = None
-                self.sendGoal( self.path.poses[self.index] )
+                self.sendGoal( self.path.poses )
 
             except tf2_ros.LookupException as e:
                 self.get_logger().error( f'Failed to get transform {repr(e)}\n' )
@@ -301,39 +299,40 @@ class RoutePublisher(Node):
         posestamp.pose.orientation.w = q[3]
         self.poses.insert( 0, posestamp )
 
-    def sendGoal( self, posestamp ):
+    def sendGoal( self, poses ):
 
-        goal = NavigateToPose.Goal()
-        goal.pose = posestamp
+        goal = NavigateThroughPoses.Goal()
+        goal.poses = poses
 
         self.get_logger().debug( 'Connecting for action server' )
         while not self.nav2_client.wait_for_server( timeout_sec=1.0 ):
             self.get_logger().debug( 'Waiting for action server' )
         self.get_logger().debug( 'Connected for action server' )
 
-        navi_response = self.nav2_client.send_goal_async( goal, feedback_callback=self.feedbackCallback )
+        navi_response = self.nav2_client.send_goal_async( goal, self.feedbackCallback )
         navi_response.add_done_callback( self.responseCallback )
 
+        self.timLabelStatusUpdate = self.get_clock().now() + rclpy.duration.Duration(seconds=1.0)
+
     def feedbackCallback( self, msg ):
-        if self.isGoalAccepted and msg.feedback.distance_remaining < self.reach_range:
-            if self.index + 1 < len(self.path.poses):
-                self.index = self.index + 1
-                self.isGoalAccepted = False
-                self.sendGoal( self.path.poses[self.index] )
+        if self.get_clock().now() > self.timLabelStatusUpdate :
+            self.timLabelStatusUpdate = self.get_clock().now() + rclpy.duration.Duration(seconds=1.0)
+            str = f'Distance remaining : {msg.feedback.distance_remaining:.02f} m'
+            self.lblStatus.setText( str )
+            self.get_logger().info( str )
 
     def responseCallback( self, future ):
         navi_handle = future.result()
 
         if not navi_handle.accepted:
-            str = f'Navigate point rejected {self.index + 1}/{len(self.path.poses)}'
+            str = f'Goal with {len(self.path.poses)} poses was rejected!'
             self.lblStatus.setText( str )
             self.get_logger().info( str )
             return
 
         self.navi_handle = navi_handle
 
-        self.isGoalAccepted = True
-        str = f'Navigating point {self.index + 1}/{len(self.path.poses)}'
+        str = f'Navigating with {len(self.path.poses)} goals....'
         self.lblStatus.setText( str )
         self.get_logger().info( str )
 
@@ -341,19 +340,18 @@ class RoutePublisher(Node):
         navi_result.add_done_callback( self.resultCallback )
 
     def resultCallback( self, future ):
-        #status = future.result().status
-        status = self.navi_handle.status
+        status = future.result().status
+        # status = self.navi_handle.status
 
         self.get_logger().info( f'1 {future}' )
         self.get_logger().info( f'2 {future.result()}' )
-        self.get_logger().info( f'3 cancelled : {future.cancelled()}' )
+        # self.get_logger().info( f'3 cancelled : {future.cancelled()}' )
 
         if status == action_msgs.msg.GoalStatus.STATUS_SUCCEEDED:
-            if self.index >= len(self.path.poses) - 1:
-                self.navi_handle = None
-                str = 'Navigate succeeded!'
-                self.lblStatus.setText( str )
-                self.get_logger().info( str )
+            self.navi_handle = None
+            str = 'Navigate succeeded!'
+            self.lblStatus.setText( str )
+            self.get_logger().info( str )
         elif status == action_msgs.msg.GoalStatus.STATUS_CANCELED:
             self.navi_handle = None
             str = 'Navigate canceled!'
