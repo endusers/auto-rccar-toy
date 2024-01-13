@@ -110,6 +110,7 @@ cp -rf ${DIR} ${WORKSPACE}/src/auto-rccar-toy
 
 # update-src
 cp -rf ${DIR}/scripts/update-src/realsense-ros ${WORKSPACE}/src
+cp -rf ${DIR}/scripts/update-src/navigation2 ${WORKSPACE}/src
 
 # not support gazebo-ros-pkgs
 if [ $(uname -m) != "x86_64" ]
