@@ -72,7 +72,7 @@
       <plugin filename="libgazebo_ros_gps_sensor.so" name="gazebo_ros_gps_sensor">
         <frame_name>gps_link</frame_name>
         <ros>
-          <remapping>~/out:=/fix</remapping>
+          <remapping>~/out:=/gnss/fix</remapping>
         </ros>
       </plugin>
     </sensor>
@@ -95,9 +95,7 @@
     <visual>
       <origin rpy="-1.57 0 -1.57" xyz="0.0 0.0 0.0"/>
       <geometry>
-        <box>
-          <size>0.02505 0.09 0.025</size>
-        </box>
+        <box size="0.02505 0.09 0.025"/>
       </geometry>
       <!--
       <geometry>
@@ -108,9 +106,7 @@
     <collision>
       <origin rpy="-1.57 0 -1.57" xyz="0.0 0.0 0.0"/>
       <geometry>
-        <box>
-          <size>0.02505 0.09 0.025</size>
-        </box>
+        <box size="0.02505 0.09 0.025"/>
       </geometry>
       <!--
       <geometry>

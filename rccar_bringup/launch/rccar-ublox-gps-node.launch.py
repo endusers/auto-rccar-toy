@@ -46,6 +46,11 @@ def generate_launch_description():
     params = os.path.join(config_directory, 'rccar_zed_f9p.yaml')
     ublox_gps_node = launch_ros.actions.Node(package='ublox_gps',
                                              executable='ublox_gps_node',
+                                             remappings=[
+                                                ('/ublox_gps_node/fix','/gnss/fix'),
+                                                ('/ublox_gps_node/fix_velocity','/gnss/fix_velocity'),
+                                                ('/ublox_gps_node/navpvt','/gnss/navpvt')
+                                            ],
                                              output='both',
                                              parameters=[params])
 

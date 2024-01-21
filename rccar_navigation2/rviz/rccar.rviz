@@ -315,7 +315,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /fix
+        Value: /gnss/fix
       Value: true
       Zoom: 16
     - Alpha: 0.699999988079071
