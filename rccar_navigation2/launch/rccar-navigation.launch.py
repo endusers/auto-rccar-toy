@@ -83,7 +83,7 @@ def generate_launch_description():
 
     navigation2_nodes = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
-            get_package_share_directory('nav2_bringup'), 'launch', 'navigation_launch.py')),
+            get_package_share_directory('rccar_navigation2'), 'launch', 'rccar-nav2.launch.py')),
         launch_arguments={
             'use_sim_time': use_sim_time,
             'autostart': autostart,
