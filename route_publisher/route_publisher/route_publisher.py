@@ -140,8 +140,8 @@ class RoutePublisher(Node):
                     utmy = utmy + 10000000
 
                 geopoint = geographic_msgs.msg.GeoPoint()
-                geopoint.latitude = wkt.x
-                geopoint.longitude = wkt.y
+                geopoint.latitude = wkt.y
+                geopoint.longitude = wkt.x
                 geopoint.altitude = 0.0
                 self.geopoints.append( geopoint )
 
