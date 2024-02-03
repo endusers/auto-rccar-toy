@@ -71,9 +71,9 @@ git checkout -B humble-devel 72f9e936062a2a6b9a210a36ba5e554058191a92
 
 # rviz_satellite
 cd ${WORKSPACE}/src
-git clone -b ros2 'https://github.com/nobleo/rviz_satellite.git'
+git clone 'https://github.com/nobleo/rviz_satellite.git'
 cd ${WORKSPACE}/src/rviz_satellite
-git checkout -B ros2 995b4090ff1f770df2f7c4bb4bdb6b5809fa66b1
+git checkout -b ros2 995b4090ff1f770df2f7c4bb4bdb6b5809fa66b1
 
 # slam_toolbox
 cd ${WORKSPACE}/src
