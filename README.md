@@ -129,7 +129,7 @@ T.B.A
 1. Rviz2を立ち上げる
 
     ```bash
-    ros2 launch rccar_bringup rccar-rviz.launch.xml
+    ros2 launch rccar_bringup rccar-rviz.launch.xml use_sim_time:=true
     ```
 
 1. 経路を設定して自律走行を開始する
