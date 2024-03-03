@@ -1,0 +1,35 @@
+<!-- ①パスの定期的な再計算はしない                                                       -->
+<!-- ②ゴールの更新はGlobalUpdatedGoalを使用                                              -->
+<!-- ③経路の再計算ができない場合は事象がクリアされるまで待機(リトライ100回)              -->
+<!--   待機中は再計算を定期的に実施(3s周期)                                               -->
+
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <PipelineSequence name="NavigateWithReplanning">
+      <RateController hz="10.0">
+        <Fallback>
+          <Sequence>
+            <GlobalUpdatedGoal />
+            <RecoveryNode number_of_retries="2" name="ComputePathToPose">
+              <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+            </RecoveryNode>
+          </Sequence>
+          <Inverter>
+            <IsStuck />
+          </Inverter>
+        </Fallback>
+      </RateController>
+      <RecoveryNode number_of_retries="100" name="NavigateWithReplanning">
+        <FollowPath path="{path}" controller_id="FollowPath"/>
+        <Sequence>
+          <Wait wait_duration="3" />
+          <RecoveryNode number_of_retries="100" name="ComputePathToPose">
+            <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+            <Wait wait_duration="3" />
+          </RecoveryNode>
+        </Sequence>
+      </RecoveryNode>
+    </PipelineSequence>
+  </BehaviorTree>
+</root>

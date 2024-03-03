@@ -1,3 +1,6 @@
 [submodule "env/foxy-official-01"]
 	path = env/foxy-official-01
 	url = https://github.com/endusers/foxy-official-01.git
+[submodule "env/humble-official-01"]
+	path = env/humble-official-01
+	url = https://github.com/endusers/humble-official-01.git

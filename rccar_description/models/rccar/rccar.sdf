@@ -36,6 +36,14 @@
             <size>0.02505 0.09 0.025</size>
           </box>
         </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
       </collision>
       <collision name='base_link_fixed_joint_lump__rear_left_mount_collision_2'>
         <pose>-0.1235 0.08075 0.045 0 -0 0</pose>
@@ -157,62 +165,11 @@
         <plugin name='gazebo_ros_gps_sensor' filename='libgazebo_ros_gps_sensor.so'>
           <frame_name>gps_link</frame_name>
           <ros>
-            <remapping>~/out:=/fix</remapping>
+            <remapping>~/out:=/gnss/fix</remapping>
           </ros>
         </plugin>
         <pose>-0.1375 0 0.125 0 -0 0</pose>
       </sensor>
-      <gravity>1</gravity>
-      <sensor name='camera_imu' type='imu'>
-        <always_on>1</always_on>
-        <update_rate>200</update_rate>
-        <plugin name='imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
-          <frame_name>camera_gyro_optical_frame</frame_name>
-          <ros>
-            <remapping>~/out:=/camera/imu_raw</remapping>
-          </ros>
-        </plugin>
-        <pose>0.09501 0.01198 0.2026 -1.5708 -0 -1.5708</pose>
-      </sensor>
-    </link>
-    <joint name='realsense_joint' type='fixed'>
-      <pose relative_to='base_link'>0.10675 0.0175 0.1975 0 -0 0</pose>
-      <parent>base_link</parent>
-      <child>realsense_link</child>
-      <axis>
-        <dynamics>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
-        </dynamics>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-      <physics>
-        <ode>
-          <limit>
-            <cfm>0</cfm>
-            <erp>0.2</erp>
-          </limit>
-        </ode>
-      </physics>
-    </joint>
-    <link name='realsense_link'>
-      <pose relative_to='realsense_joint'>0 0 0 0 -0 0</pose>
-      <inertial>
-        <pose>0 0 0 0 -0 0</pose>
-        <mass>0.564</mass>
-        <inertia>
-          <ixx>0.001</ixx>
-          <ixy>0</ixy>
-          <ixz>0</ixz>
-          <iyy>0.001</iyy>
-          <iyz>0</iyz>
-          <izz>0.001</izz>
-        </inertia>
-      </inertial>
       <sensor name='cameradepth' type='depth'>
         <camera name='camera'>
           <horizontal_fov>1.57</horizontal_fov>
@@ -233,6 +190,7 @@
         <always_on>1</always_on>
         <update_rate>30</update_rate>
         <visualize>0</visualize>
+        <pose>0.10675 0.0175 0.1975 0 -0 0</pose>
       </sensor>
       <sensor name='cameracolor' type='camera'>
         <camera name='camera'>
@@ -255,6 +213,7 @@
         <always_on>1</always_on>
         <update_rate>30</update_rate>
         <visualize>1</visualize>
+        <pose>0.10675 0.0175 0.1975 0 -0 0</pose>
       </sensor>
       <sensor name='cameraired1' type='camera'>
         <camera name='camera'>
@@ -277,6 +236,7 @@
         <always_on>1</always_on>
         <update_rate>1</update_rate>
         <visualize>0</visualize>
+        <pose>0.10675 0.0175 0.1975 0 -0 0</pose>
       </sensor>
       <sensor name='cameraired2' type='camera'>
         <camera name='camera'>
@@ -299,6 +259,19 @@
         <always_on>1</always_on>
         <update_rate>1</update_rate>
         <visualize>0</visualize>
+        <pose>0.10675 0.0175 0.1975 0 -0 0</pose>
+      </sensor>
+      <gravity>1</gravity>
+      <sensor name='camera_imu' type='imu'>
+        <always_on>1</always_on>
+        <update_rate>200</update_rate>
+        <plugin name='imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+          <frame_name>camera_gyro_optical_frame</frame_name>
+          <ros>
+            <remapping>~/out:=/camera/imu_raw</remapping>
+          </ros>
+        </plugin>
+        <pose>0.09501 0.01198 0.2026 -1.5708 -0 -1.5708</pose>
       </sensor>
     </link>
     <joint name='front_left_mount_joint' type='revolute'>

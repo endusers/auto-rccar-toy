@@ -3,11 +3,11 @@
 
 # The MIT License
 
-# Copyright (c) 2023 Motoyuki Endo
+# Copyright (c) 2023-2024 Motoyuki Endo
 # Released under the MIT license
 # http://opensource.org/licenses/mit-license.php
 
-# Copyright (c) 2001-2023 Python Software Foundation; All Rights Reserved
+# Copyright (c) 2001-2024 Python Software Foundation; All Rights Reserved
 
 import sys
 import threading
@@ -26,17 +26,20 @@ import action_msgs.msg
 import tf2_ros
 import tf2_geometry_msgs
 from nav2_msgs.action import NavigateToPose
+from nav2_msgs.action import NavigateThroughPoses
 import PyKDL
 import pandas
 import geopandas
 from pyproj import Proj
 from shapely.geometry import Point, LineString
 from shapely.ops import nearest_points
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QButtonGroup, QRadioButton
 
 
 CONTROLER_MAIN_CYCLE = 0.1
 
+RADIO_ID_TO_POSE       = 1
+RADIO_ID_THROUGH_POSES = 2
 
 class RoutePublisher(Node):
 
@@ -66,14 +69,20 @@ class RoutePublisher(Node):
         self.pubRoute : Publisher = self.create_publisher( nav_msgs.msg.Path, 'route', 10 )
         self.subOdom : Subscription = self.create_subscription( nav_msgs.msg.Odometry, 'odometry/global', self.odomCallback,10 )
 
-        self.nav2_client : ActionClient = ActionClient( self, NavigateToPose, 'navigate_to_pose' )
+        self.nav2_client_pose : ActionClient = ActionClient( self, NavigateToPose, 'navigate_to_pose' )
+        self.nav2_client_poses : ActionClient = ActionClient( self, NavigateThroughPoses, 'navigate_through_poses' )
 
         self.timer : Timer = self.create_timer( CONTROLER_MAIN_CYCLE, self.mainLoop )
 
-        self.index : int = 0
         self.isRouteValid : bool = False
-        self.isGoalAccepted : bool = False
         self.navi_handle = None
+        self.index : int = 0
+        self.isGoalAccepted : bool = False
+        self.modeNavi : int = RADIO_ID_TO_POSE
+
+        self.msgToPoseFeedback = None
+
+        self.timLabelStatusUpdate : rclpy.time.Time = self.get_clock().now() + rclpy.duration.Duration(seconds=1.0)
 
     def mainLoop(self):
 
@@ -83,12 +92,12 @@ class RoutePublisher(Node):
 
     def createWidget(self):
         self.widget = QWidget()
-        self.widget.resize( 240, 160 )
+        self.widget.resize( 320, 160 )
         self.widget.setWindowTitle( 'RoutePublisher' )
 
         self.textbox = QLineEdit( self.widget )
         self.textbox.setText( 'RouteFile.csv' )  
-        self.textbox.resize( 220, 20 )
+        self.textbox.resize( 300, 20 )
         self.textbox.move( 10, 10 )
 
         btnFile = QPushButton( self.widget )
@@ -106,9 +115,23 @@ class RoutePublisher(Node):
         btnStop.clicked.connect(  self.stopNavigation )
         btnStop.move( 10, 100 )
 
+        self.radioNaviMode = QButtonGroup( self.widget )
+
+        rdoToPose = QRadioButton( self.widget )
+        rdoToPose.setText( 'TO POSE' )
+        rdoToPose.move( 100, 70 )
+        self.radioNaviMode.addButton( rdoToPose, RADIO_ID_TO_POSE ) 
+
+        rdoThroughPoses = QRadioButton( self.widget )
+        rdoThroughPoses.setText( 'THROUGH POSES' )
+        rdoThroughPoses.move( 180, 70 )
+        self.radioNaviMode.addButton( rdoThroughPoses, RADIO_ID_THROUGH_POSES ) 
+
+        rdoToPose.setChecked( True )
+
         self.lblStatus = QLabel( self.widget )
         self.lblStatus.setText( '' )
-        self.lblStatus.resize( 220, 20 )
+        self.lblStatus.resize( 300, 20 )
         self.lblStatus.move( 10, 130 )
         self.lblStatus.setStyleSheet( 'border:1px solid gray' )
 
@@ -140,8 +163,8 @@ class RoutePublisher(Node):
                     utmy = utmy + 10000000
 
                 geopoint = geographic_msgs.msg.GeoPoint()
-                geopoint.latitude = wkt.x
-                geopoint.longitude = wkt.y
+                geopoint.latitude = wkt.y
+                geopoint.longitude = wkt.x
                 geopoint.altitude = 0.0
                 self.geopoints.append( geopoint )
 
@@ -194,7 +217,7 @@ class RoutePublisher(Node):
         if self.isRouteValid:
             try:
                 transform = self.tf_buffer.lookup_transform(
-                    self.map_frame, self.utm_frame, rclpy.time.Time(),
+                    self.map_frame, self.utm_frame, self.get_clock().now(),
                     timeout=rclpy.time.Duration(seconds=10)
                 )
 
@@ -233,16 +256,22 @@ class RoutePublisher(Node):
                 now_x : float = pose.position.x
                 now_y : float = pose.position.y
 
-                dx : float = self.poses[0].pose.position.x - now_x
-                dy : float = self.poses[0].pose.position.y - now_y
+                dx : float = self.path.poses[0].pose.position.x - now_x
+                dy : float = self.path.poses[0].pose.position.y - now_y
                 distance : float = math.hypot(dx, dy)
 
-                self.index = 0
-                if distance < self.reach_range:
-                    self.index = self.index + 1
-                self.isGoalAccepted = False
                 self.navi_handle = None
-                self.sendGoal( self.path.poses[self.index] )
+                self.modeNavi = self.radioNaviMode.checkedId()
+                if self.modeNavi == RADIO_ID_TO_POSE:
+                    self.index = 0
+                    if distance < self.reach_range:
+                        self.index = self.index + 1
+                    self.isGoalAccepted = False
+                    self.sendGoalPose( self.path.poses[self.index] )
+                else:
+                    # if distance < self.reach_range:
+                    #     del self.path.poses[:1]
+                    self.sendGoalPoses( self.path.poses )
 
             except tf2_ros.LookupException as e:
                 self.get_logger().error( f'Failed to get transform {repr(e)}\n' )
@@ -301,39 +330,77 @@ class RoutePublisher(Node):
         posestamp.pose.orientation.w = q[3]
         self.poses.insert( 0, posestamp )
 
-    def sendGoal( self, posestamp ):
+    def sendGoalPose( self, posestamp ):
 
         goal = NavigateToPose.Goal()
         goal.pose = posestamp
 
         self.get_logger().debug( 'Connecting for action server' )
-        while not self.nav2_client.wait_for_server( timeout_sec=1.0 ):
+        while not self.nav2_client_pose.wait_for_server( timeout_sec=1.0 ):
             self.get_logger().debug( 'Waiting for action server' )
         self.get_logger().debug( 'Connected for action server' )
 
-        navi_response = self.nav2_client.send_goal_async( goal, feedback_callback=self.feedbackCallback )
+        navi_response = self.nav2_client_pose.send_goal_async( goal, feedback_callback=self.feedbackCallback )
         navi_response.add_done_callback( self.responseCallback )
 
+    def sendGoalPoses( self, poses ):
+
+        goal = NavigateThroughPoses.Goal()
+        goal.poses = poses
+
+        self.get_logger().debug( 'Connecting for action server' )
+        while not self.nav2_client_poses.wait_for_server( timeout_sec=1.0 ):
+            self.get_logger().debug( 'Waiting for action server' )
+        self.get_logger().debug( 'Connected for action server' )
+
+        navi_response = self.nav2_client_poses.send_goal_async( goal, self.feedbackCallback )
+        navi_response.add_done_callback( self.responseCallback )
+
+        self.timLabelStatusUpdate = self.get_clock().now() + rclpy.duration.Duration(seconds=1.0)
+
     def feedbackCallback( self, msg ):
-        if self.isGoalAccepted and msg.feedback.distance_remaining < self.reach_range:
-            if self.index + 1 < len(self.path.poses):
-                self.index = self.index + 1
-                self.isGoalAccepted = False
-                self.sendGoal( self.path.poses[self.index] )
+
+        if self.modeNavi == RADIO_ID_TO_POSE:
+            is_changed_distance = False
+            if self.msgToPoseFeedback is not None and \
+                self.msgToPoseFeedback.feedback.distance_remaining != msg.feedback.distance_remaining:
+                is_changed_distance = True
+
+            if ( self.isGoalAccepted ) and \
+                ( is_changed_distance ) and \
+                ( msg.feedback.distance_remaining < self.reach_range ):
+                if self.index + 1 < len(self.path.poses):
+                    self.index = self.index + 1
+                    self.isGoalAccepted = False
+                    self.sendGoalPose( self.path.poses[self.index] )
+        else:
+            if self.get_clock().now() > self.timLabelStatusUpdate :
+                self.timLabelStatusUpdate = self.get_clock().now() + rclpy.duration.Duration(seconds=1.0)
+                str = f'Distance remaining : {msg.feedback.distance_remaining:.02f} m'
+                self.lblStatus.setText( str )
+                self.get_logger().info( str )
+
+        self.msgToPoseFeedback = msg
 
     def responseCallback( self, future ):
         navi_handle = future.result()
 
         if not navi_handle.accepted:
-            str = f'Navigate point rejected {self.index + 1}/{len(self.path.poses)}'
+            if self.modeNavi == RADIO_ID_TO_POSE:
+                str = f'Navigate point rejected {self.index + 1}/{len(self.path.poses)}'
+            else:
+                str = f'Goal with {len(self.path.poses)} poses was rejected!'
             self.lblStatus.setText( str )
             self.get_logger().info( str )
             return
 
         self.navi_handle = navi_handle
 
-        self.isGoalAccepted = True
-        str = f'Navigating point {self.index + 1}/{len(self.path.poses)}'
+        if self.modeNavi == RADIO_ID_TO_POSE:
+            self.isGoalAccepted = True
+            str = f'Navigating point {self.index + 1}/{len(self.path.poses)}'
+        else:
+            str = f'Navigating with {len(self.path.poses)} goals....'
         self.lblStatus.setText( str )
         self.get_logger().info( str )
 
@@ -341,15 +408,31 @@ class RoutePublisher(Node):
         navi_result.add_done_callback( self.resultCallback )
 
     def resultCallback( self, future ):
-        #status = future.result().status
-        status = self.navi_handle.status
+        sts_result = future.result().status
+        sts_hundle = self.navi_handle.status
 
-        self.get_logger().info( f'1 {future}' )
-        self.get_logger().info( f'2 {future.result()}' )
-        self.get_logger().info( f'3 cancelled : {future.cancelled()}' )
+        if self.modeNavi == RADIO_ID_TO_POSE:
+            status = sts_hundle
+        else:
+            status = sts_result
+
+        self.get_logger().info( f'1 {status}' )
+        self.get_logger().info( f'2 {future}' )
+        self.get_logger().info( f'3 {future.result()}' )
+        self.get_logger().info( f'4 cancelled : {future.cancelled()}' )
 
         if status == action_msgs.msg.GoalStatus.STATUS_SUCCEEDED:
-            if self.index >= len(self.path.poses) - 1:
+            is_succeeded = False
+            if self.modeNavi == RADIO_ID_TO_POSE:
+                if self.index >= len(self.path.poses) - 1:
+                    is_succeeded = True
+                else:
+                    self.isGoalAccepted = False
+                    self.sendGoalPose( self.path.poses[self.index] )
+            else:
+                is_succeeded = True
+
+            if is_succeeded:
                 self.navi_handle = None
                 str = 'Navigate succeeded!'
                 self.lblStatus.setText( str )
