@@ -4,14 +4,14 @@
  * @brief       initial_odometry
  * @note        なし
  * 
- * @version     1.0.0
- * @date        2023/03/26
+ * @version     1.1.0
+ * @date        2024/01/05
  * 
- * @copyright   (C) 2023 Motoyuki Endo
+ * @copyright   (C) 2023-2024 Motoyuki Endo
  */
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 class InitialOdometry : public rclcpp::Node
 {

@@ -48,7 +48,7 @@
 
 - ソフトウェア
 
-  - ROS2 Foxy
+  - ROS2 Humble
   - micro-ROS
   - RTKLIB
 
@@ -56,7 +56,7 @@
 
   - Package
 
-    必要となるパッケージは [Dockerfile](https://github.com/endusers/foxy-official-01/blob/main/ros-foxy-official/Dockerfile) を参照してください  
+    必要となるパッケージは [Dockerfile](https://github.com/endusers/humble-official-01/blob/main/ros-humble-official/Dockerfile) を参照してください  
 
 ## 構成図
 
@@ -123,13 +123,13 @@ T.B.A
 1. ナビゲーションを立ち上げる
 
     ```bash
-    ros2 launch rccar_navigation2 rccar_navigation2.launch.py use_sim_time:=true map:=smalltown_world.yaml
+    ros2 launch rccar_navigation2 rccar-navigation.launch.py use_sim_time:=true map:=smalltown_world.yaml
     ```
 
 1. Rviz2を立ち上げる
 
     ```bash
-    ros2 launch rccar_bringup rccar-rviz.launch.xml
+    ros2 launch rccar_bringup rccar-rviz.launch.xml use_sim_time:=true
     ```
 
 1. 経路を設定して自律走行を開始する
@@ -171,7 +171,7 @@ T.B.A
 1. JetsonにSSHで接続しナビゲーションを立ち上げる
 
     ```bash
-    ros2 launch rccar_navigation2 rccar_navigation2.launch.py
+    ros2 launch rccar_navigation2 rccar-navigation.launch.py
     ```
 
 1. ホストPCでRviz2を立ち上げる
@@ -222,6 +222,6 @@ T.B.A
     本ソフトを動かすためのROSのDocker環境を下記ディレクトリにサブモジュールとして登録済み  
     詳細は下記リポジトリを参照してください  
 
-    [auto-rccar-toy/env/foxy-official-01](https://github.com/endusers/foxy-official-01)  
+    [auto-rccar-toy/env/humble-official-01](https://github.com/endusers/humble-official-01)  
 
-    物理PCにセットアップしたい場合で必要となるパッケージは [Dockerfile](https://github.com/endusers/foxy-official-01/blob/main/ros-foxy-official/Dockerfile) を参照してください  
+    物理PCにセットアップしたい場合で必要となるパッケージは [Dockerfile](https://github.com/endusers/humble-official-01/blob/main/ros-humble-official/Dockerfile) を参照してください  

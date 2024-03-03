@@ -6,6 +6,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
+from launch.actions import SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -21,8 +22,8 @@ def generate_launch_description():
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
         default_value=
-            'empty_100m.yaml',
-            #'empty_1000m.yaml',
+            #'empty_100m.yaml',
+            'empty_1000m.yaml',
             #'smalltown_world.yaml',
         description='File name for map yaml file to load')
 
@@ -36,18 +37,16 @@ def generate_launch_description():
             get_package_share_directory('rccar_navigation2'), 'config', 'rccar_nav2_params.yaml'),
         description='Full path to the ROS2 parameters file to use for all launched nodes')
 
-    declare_bt_xml_cmd = DeclareLaunchArgument(
-        'default_bt_xml_filename',
-        default_value=os.path.join(
-            get_package_share_directory('rccar_navigation2'), 'config', 'rccar_navigate_replanning.xml'),
-        description='Full path to the behavior tree xml file to use')
+    declare_log_level_cmd = DeclareLaunchArgument(
+        'log_level', default_value='info',
+        description='log level')
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
 
     map_yaml_file = [ os.path.join( get_package_share_directory('rccar_navigation2'), 'map', '' ), LaunchConfiguration('map') ] 
     autostart = LaunchConfiguration('autostart')
     params_file = LaunchConfiguration('params_file')
-    default_bt_xml_filename = LaunchConfiguration('default_bt_xml_filename')
+    log_level = LaunchConfiguration('log_level')
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
@@ -58,6 +57,9 @@ def generate_launch_description():
     remappings = [
         ('/tf', 'tf'),
         ('/tf_static', 'tf_static')]
+
+    stdout_linebuf_envvar = SetEnvironmentVariable(
+        'RCUTILS_LOGGING_BUFFERED_STREAM', '1')
 
     map_server_node = Node(
             package='nav2_map_server',
@@ -81,23 +83,33 @@ def generate_launch_description():
 
     navigation2_nodes = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
-            get_package_share_directory('nav2_bringup'), 'launch', 'navigation_launch.py')),
+            get_package_share_directory('rccar_navigation2'), 'launch', 'rccar-nav2.launch.py')),
         launch_arguments={
             'use_sim_time': use_sim_time,
             'autostart': autostart,
             'params_file': params_file,
-            'default_bt_xml_filename': default_bt_xml_filename,
             'use_lifecycle_mgr': 'false',
-            'map_subscribe_transient_local': 'true'}.items()
+            'map_subscribe_transient_local': 'true',
+            'log_level': log_level
+        }.items()
     )
 
-    return LaunchDescription([
-        declare_use_sim_time_cmd,
-        declare_map_yaml_cmd,
-        declare_autostart_cmd,
-        declare_params_file_cmd,
-        declare_bt_xml_cmd,
-        map_server_node,
-        lifecycle_manager_mapserver,
-        navigation2_nodes,
-    ])
+    # Create the launch description and populate
+    ld = LaunchDescription()
+
+    # Set environment variables
+    ld.add_action(stdout_linebuf_envvar)
+
+    # Declare the launch options
+    ld.add_action(declare_use_sim_time_cmd)
+    ld.add_action(declare_map_yaml_cmd)
+    ld.add_action(declare_autostart_cmd)
+    ld.add_action(declare_params_file_cmd)
+    ld.add_action(declare_log_level_cmd)
+
+    # Add the actions to launch all of the navigation nodes
+    ld.add_action(map_server_node)
+    ld.add_action(lifecycle_manager_mapserver)
+    ld.add_action(navigation2_nodes)
+
+    return ld
