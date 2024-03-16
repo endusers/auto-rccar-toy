@@ -100,8 +100,6 @@ Visualization Manager:
           Value: true
         odom:
           Value: true
-        realsense_link:
-          Value: false
         rear_left_mount:
           Value: false
         rear_left_wheel:
@@ -142,8 +140,6 @@ Visualization Manager:
                     camera_infra2_frame:
                       camera_infra2_optical_frame:
                         {}
-                    realsense_link:
-                      {}
                 front_left_mount:
                   {}
                 front_left_wheel:
@@ -269,10 +265,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        realsense_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         rear_left_mount:
           Alpha: 1
           Show Axes: false
