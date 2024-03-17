@@ -78,9 +78,8 @@ class RoutePublisher(Node):
         self.navi_handle = None
         self.index : int = 0
         self.isGoalAccepted : bool = False
+        self.isValidDistanceRemaining : bool = False
         self.modeNavi : int = RADIO_ID_TO_POSE
-
-        self.msgToPoseFeedback = None
 
         self.timLabelStatusUpdate : rclpy.time.Time = self.get_clock().now() + rclpy.duration.Duration(seconds=1.0)
 
@@ -267,6 +266,7 @@ class RoutePublisher(Node):
                     if distance < self.reach_range:
                         self.index = self.index + 1
                     self.isGoalAccepted = False
+                    self.isValidDistanceRemaining = False
                     self.sendGoalPose( self.path.poses[self.index] )
                 else:
                     # if distance < self.reach_range:
@@ -361,17 +361,17 @@ class RoutePublisher(Node):
     def feedbackCallback( self, msg ):
 
         if self.modeNavi == RADIO_ID_TO_POSE:
-            is_changed_distance = False
-            if self.msgToPoseFeedback is not None and \
-                self.msgToPoseFeedback.feedback.distance_remaining != msg.feedback.distance_remaining:
-                is_changed_distance = True
+            if ( not self.isValidDistanceRemaining ) and \
+                ( msg.feedback.distance_remaining >= self.reach_range ):
+                self.isValidDistanceRemaining = True
 
             if ( self.isGoalAccepted ) and \
-                ( is_changed_distance ) and \
+                ( self.isValidDistanceRemaining ) and \
                 ( msg.feedback.distance_remaining < self.reach_range ):
                 if self.index + 1 < len(self.path.poses):
                     self.index = self.index + 1
                     self.isGoalAccepted = False
+                    self.isValidDistanceRemaining = False
                     self.sendGoalPose( self.path.poses[self.index] )
         else:
             if self.get_clock().now() > self.timLabelStatusUpdate :
@@ -379,8 +379,6 @@ class RoutePublisher(Node):
                 str = f'Distance remaining : {msg.feedback.distance_remaining:.02f} m'
                 self.lblStatus.setText( str )
                 self.get_logger().info( str )
-
-        self.msgToPoseFeedback = msg
 
     def responseCallback( self, future ):
         navi_handle = future.result()
@@ -408,13 +406,13 @@ class RoutePublisher(Node):
         navi_result.add_done_callback( self.resultCallback )
 
     def resultCallback( self, future ):
-        sts_result = future.result().status
-        sts_hundle = self.navi_handle.status
+        # sts_result = future.result().status
+        # sts_hundle = self.navi_handle.status
 
         if self.modeNavi == RADIO_ID_TO_POSE:
-            status = sts_hundle
+            status = self.navi_handle.status if self.navi_handle is not None else future.result().status
         else:
-            status = sts_result
+            status = future.result().status
 
         self.get_logger().info( f'1 {status}' )
         self.get_logger().info( f'2 {future}' )
@@ -428,6 +426,7 @@ class RoutePublisher(Node):
                     is_succeeded = True
                 else:
                     self.isGoalAccepted = False
+                    self.isValidDistanceRemaining = False
                     self.sendGoalPose( self.path.poses[self.index] )
             else:
                 is_succeeded = True
