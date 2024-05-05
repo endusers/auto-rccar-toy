@@ -103,6 +103,16 @@ git clone -b humble 'https://github.com/micro-ROS/micro_ros_msgs.git'
 cd ${WORKSPACE}/src/uros/micro_ros_msgs
 git checkout -B humble 9f9ab03b5d7a25fd9ff0c6df4f11838905d30ca5
 
+# rtabmap
+cd ${WORKSPACE}/src
+git clone -b master 'https://github.com/introlab/rtabmap.git'
+cd ${WORKSPACE}/src/rtabmap
+git checkout -B master 1ab0133f140a7de6c9e4b077bb9d5bdf82bf5942
+cd ${WORKSPACE}/src
+git clone -b ros2 'https://github.com/introlab/rtabmap_ros.git'
+cd ${WORKSPACE}/src/rtabmap_ros
+git checkout -B ros2 fdd13c31f9574e72ed27a79321dfa00676176239
+
 cd ${WORKSPACE}/src
 
 # auto-rccar-toy
