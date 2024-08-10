@@ -113,6 +113,16 @@ git clone -b ros2 'https://github.com/introlab/rtabmap_ros.git'
 cd ${WORKSPACE}/src/rtabmap_ros
 git checkout -B ros2 fdd13c31f9574e72ed27a79321dfa00676176239
 
+# livox_ros_driver2
+cd ${WORKSPACE}/src
+git clone -b 1.2.4 'https://github.com/Livox-SDK/livox_ros_driver2.git'
+
+# livox_laser_simulation
+cd ${WORKSPACE}/src
+git clone -b main 'https://github.com/LihanChen2004/livox_laser_simulation_ros2.git'
+cd ${WORKSPACE}/src/livox_laser_simulation_ros2
+git checkout -B main cee09dc9eea6e0a9822735bbc98c925441bbb019
+
 cd ${WORKSPACE}/src
 
 # auto-rccar-toy
@@ -127,6 +137,7 @@ if [ $(uname -m) != "x86_64" ]
 then
     rm -rf ${WORKSPACE}/src/realsense_gazebo_plugin
     rm -rf ${WORKSPACE}/src/navigation2/nav2_system_tests
+    rm -rf ${WORKSPACE}/src/livox_laser_simulation_ros2
 fi
 
 # build

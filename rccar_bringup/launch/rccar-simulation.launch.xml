@@ -4,10 +4,13 @@
   <arg name="use_sim_time" default="true"/>
   <arg name="world" default="empty.world"/>
   <!-- <arg name="world" default="smalltown.world"/> -->
+  <arg name="model" default="$(find-pkg-share rccar_description)/models/rccar-unimog/rccar-unimog.urdf.xacro"/>
+  <!-- <arg name="model" default="$(find-pkg-share rccar_description)/models/rccar-bronco/rccar-bronco.urdf.xacro"/> -->
 
   <include file="$(find-pkg-share rccar_gazebo)/launch/rccar-gazebo.launch.py">
     <arg name="use_sim_time" value="$(var use_sim_time)"/>
     <arg name="world" value="$(var world)"/>
+    <arg name="model" value="$(var model)"/>
   </include>
 
   <include file="$(find-pkg-share rccar_bringup)/launch/rccar-initial-odometry.launch.xml">
