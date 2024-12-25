@@ -59,9 +59,9 @@ git checkout -B foxy-devel 73b3061c5a97fc5846112b0ea2da70c6e24d9782
 
 # realsense-ros
 cd ${WORKSPACE}/src
-git clone -b ros2-development 'https://github.com/IntelRealSense/realsense-ros.git'
+git clone -b ros2-master 'https://github.com/IntelRealSense/realsense-ros.git'
 cd ${WORKSPACE}/src/realsense-ros
-git checkout -B ros2-development d7b029fe90048e7b1a60aedfde36f2c3ebe05d60
+git checkout -B ros2-master 1cbd81be81e807eefb46f098e76381888ffc7001
 
 # robot_localization
 cd ${WORKSPACE}/src
