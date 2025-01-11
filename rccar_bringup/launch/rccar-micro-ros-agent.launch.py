@@ -13,7 +13,8 @@ def generate_launch_description():
             #arguments=["udp4", "-p", "8888", "-v6"]
             #arguments=["udp4", "--port", "8888"]
             #arguments=["serial", "--dev", "/dev/ttyUSB0", "--baud", "115200"]
-            arguments=["serial", "--dev", "/dev/ttyTHS0", "--baud", "115200"]
+            # arguments=["serial", "--dev", "/dev/ttyTHS0", "--baud", "115200"]
+            arguments=["serial", "--dev", "/dev/ttyTHS1", "--baud", "115200"]
         )
     ])
 
