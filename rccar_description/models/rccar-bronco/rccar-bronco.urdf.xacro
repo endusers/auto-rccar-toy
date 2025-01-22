@@ -57,7 +57,7 @@
     <origin xyz="-0.0239 0.0 0.279" rpy="0 0 0"/>
   </xacro:sensor_d435i>
 
-  <xacro:mid360 name="lidar_link" parent="base_link" topic="lidar">
+  <xacro:mid360 name="lidar_link" parent="base_link" topic="lidar/points_raw">
     <origin xyz="-0.094 0.0 0.309" rpy="0 0 0"/>
   </xacro:mid360>
 

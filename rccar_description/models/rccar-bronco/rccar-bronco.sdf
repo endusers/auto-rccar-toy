@@ -273,13 +273,25 @@
       <sensor name='camera_imu' type='imu'>
         <always_on>1</always_on>
         <update_rate>200</update_rate>
-        <plugin name='imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+        <plugin name='camera_imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
           <frame_name>camera_gyro_optical_frame</frame_name>
           <ros>
             <remapping>~/out:=/camera/imu_raw</remapping>
           </ros>
         </plugin>
         <pose>-0.02504 0.01198 0.2966 -1.5708 -0 -1.5708</pose>
+      </sensor>
+      <gravity>1</gravity>
+      <sensor name='lidar_imu' type='imu'>
+        <always_on>1</always_on>
+        <update_rate>200</update_rate>
+        <plugin name='lidar_imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+          <frame_name>lidar_link</frame_name>
+          <ros>
+            <remapping>~/out:=/lidar/imu_raw</remapping>
+          </ros>
+        </plugin>
+        <pose>-0.094 0 0.309 0 -0 0</pose>
       </sensor>
       <sensor name='lidar_link' type='ray'>
         <visualize>1</visualize>
@@ -315,7 +327,7 @@
           <samples>40000</samples>
           <downsample>1</downsample>
           <csv_file_name>/home/docker/mnt/rccar_ws/install/rccar_description/share/rccar_description/scan_mode/mid360.csv</csv_file_name>
-          <topic>lidar</topic>
+          <topic>lidar/points_raw</topic>
         </plugin>
         <pose>-0.094 0 0.309 0 -0 0</pose>
       </sensor>

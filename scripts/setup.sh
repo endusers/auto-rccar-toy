@@ -123,6 +123,12 @@ git clone -b main 'https://github.com/LihanChen2004/livox_laser_simulation_ros2.
 cd ${WORKSPACE}/src/livox_laser_simulation_ros2
 git checkout -B main cee09dc9eea6e0a9822735bbc98c925441bbb019
 
+# FAST_LIO
+cd ${WORKSPACE}/src
+git clone -b ROS2 https://github.com/hku-mars/FAST_LIO.git --recurse-submodules
+cd ${WORKSPACE}/src/FAST_LIO
+git checkout -B ROS2 a4743b095409588842a5b30ddfa27e29d2f99164 --recurse-submodules
+
 cd ${WORKSPACE}/src
 
 # auto-rccar-toy
