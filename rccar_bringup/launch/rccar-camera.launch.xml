@@ -7,16 +7,17 @@
     <include file="$(find-pkg-share rccar_bringup)/launch/rccar-rs-d435i.launch.py" />
   </group>
 
-  <node pkg="imu_filter_madgwick" exec="imu_filter_madgwick_node" name="rccar_imu_filter_madgwick_node" output="both">
+  <node pkg="imu_filter_madgwick" exec="imu_filter_madgwick_node" name="rccar_camera_imu_filter_madgwick_node" output="both">
     <param name="use_sim_time" value="$(var use_sim_time)"/>
     <param name="use_mag" value="false"/>
     <param name="publish_tf" value="false"/>
+    <param name="fixed_frame" value="camera_gyro_optical_frame"/>
     <param name="world_frame" value="enu"/>
     <remap from="imu/data_raw" to="camera/imu_raw"/>
     <remap from="imu/data" to="camera/imu"/>
   </node>
 
-  <node pkg="pointcloud_to_laserscan" exec="pointcloud_to_laserscan_node" name="rccar_pointcloud_to_laserscan_node" output="both">
+  <node pkg="pointcloud_to_laserscan" exec="pointcloud_to_laserscan_node" name="rccar_camera_pointcloud_to_laserscan_node" output="both">
     <param name="use_sim_time" value="$(var use_sim_time)"/>
     <param name="target_frame" value="camera_depth_frame"/>
     <param name="transform_tolerance" value="0.01"/>
@@ -34,7 +35,7 @@
     <remap from="scan" to="camera/scan/cloud"/>
   </node>
 
-  <node pkg="depthimage_to_laserscan" exec="depthimage_to_laserscan_node" name="rccar_depthimage_to_laserscan_node" output="both">
+  <node pkg="depthimage_to_laserscan" exec="depthimage_to_laserscan_node" name="rccar_camera_depthimage_to_laserscan_node" output="both">
     <param name="use_sim_time" value="$(var use_sim_time)"/>
     <param name="scan_time" value="0.033"/>
     <param name="range_min" value="0.3"/>

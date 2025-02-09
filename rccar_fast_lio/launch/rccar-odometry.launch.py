@@ -32,7 +32,7 @@ def generate_launch_description():
     )
 
     decalre_config_file_cmd = DeclareLaunchArgument(
-        'config_file', default_value='rccar_mid360_mapping.yaml',
+        'config_file', default_value='rccar_mid360_odometry.yaml',
         description='Config file'
     )
     declare_rviz_cmd = DeclareLaunchArgument(
@@ -64,7 +64,7 @@ def generate_launch_description():
         remappings=[
             ('/Odometry','/odometry/lidar_raw'),
         ],
-        output='both'
+        output='both',
     )
     rviz_node = Node(
         package='rviz2',

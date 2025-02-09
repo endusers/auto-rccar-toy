@@ -1,0 +1,14 @@
+<!-- odometry-frame-remap.xml -->
+
+<launch>
+  <arg name="use_sim_time" default="false"/>
+
+  <node pkg="odometry_frame_remap" exec="odometry_frame_remap" name="odometry_frame_remap_node" output="both">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="new_frame_id" value="odom"/>
+    <param name="new_child_frame_id" value="base_link"/>
+    <param name="publish_tf" value="false"/>
+    <remap from="odom/in" to="odometry_raw"/>
+    <remap from="odom/out" to="odometry"/>
+  </node>
+</launch>

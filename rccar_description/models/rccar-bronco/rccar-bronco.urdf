@@ -254,7 +254,7 @@
     <gravity>true</gravity>
     <sensor name="lidar_imu" type="imu">
       <always_on>true</always_on>
-      <update_rate>200</update_rate>
+      <update_rate>10</update_rate>
       <plugin filename="libgazebo_ros_imu_sensor.so" name="lidar_imu_plugin">
         <frame_name>lidar_link</frame_name>
         <ros>
@@ -295,8 +295,6 @@
       <geometry>
         <box size="0.055 0.060 0.0225"/>
       </geometry>
-      livox_laser_simulation_ros2
-      
       <material name="black"/>
     </visual>
   </link>

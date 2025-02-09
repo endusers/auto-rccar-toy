@@ -42,7 +42,7 @@
       <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
       <geometry>
         <box size="0.055 0.060 0.0225" />
-      </geometry>livox_laser_simulation_ros2
+      </geometry>
       <material name="black"/>
     </visual>
   </link>

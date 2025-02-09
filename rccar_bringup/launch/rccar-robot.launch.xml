@@ -1,8 +1,8 @@
 <!-- rccar-robot-launch.xml -->
 
 <launch>
-  <arg name="model" default="$(find-pkg-share rccar_description)/models/rccar-unimog/rccar-unimog.urdf.xacro"/>
-  <!-- <arg name="model" default="$(find-pkg-share rccar_description)/models/rccar-bronco/rccar-bronco.urdf.xacro"/> -->
+  <!-- <arg name="model" default="$(find-pkg-share rccar_description)/models/rccar-unimog/rccar-unimog.urdf.xacro"/> -->
+  <arg name="model" default="$(find-pkg-share rccar_description)/models/rccar-bronco/rccar-bronco.urdf.xacro"/>
 
   <include file="$(find-pkg-share rccar_description)/launch/rccar-robot-state-publisher.launch.py">
     <arg name="model" value="$(var model)"/>
@@ -10,7 +10,4 @@
 
   <include file="$(find-pkg-share rccar_bringup)/launch/rccar-micro-ros-agent.launch.py" />
   <!-- <include file="$(find-pkg-share rccar_bringup)/launch/rccar-bno055.launch.py" /> -->
-  <include file="$(find-pkg-share rccar_bringup)/launch/rccar-ublox-gps-node.launch.py" />
-
-  <include file="$(find-pkg-share rccar_bringup)/launch/rccar-initial-odometry.launch.xml" />
 </launch>

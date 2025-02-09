@@ -105,13 +105,13 @@ git checkout -B humble 9f9ab03b5d7a25fd9ff0c6df4f11838905d30ca5
 
 # rtabmap
 cd ${WORKSPACE}/src
-git clone -b master 'https://github.com/introlab/rtabmap.git'
+git clone -b humble-devel 'https://github.com/introlab/rtabmap.git'
 cd ${WORKSPACE}/src/rtabmap
-git checkout -B master 1ab0133f140a7de6c9e4b077bb9d5bdf82bf5942
+git checkout -B humble-devel bc9da105892bbe8fc26b04fed9c0d7150e2b76c0
 cd ${WORKSPACE}/src
-git clone -b ros2 'https://github.com/introlab/rtabmap_ros.git'
+git clone -b humble-devel 'https://github.com/introlab/rtabmap_ros.git'
 cd ${WORKSPACE}/src/rtabmap_ros
-git checkout -B ros2 fdd13c31f9574e72ed27a79321dfa00676176239
+git checkout -B humble-devel f2b0aa7ceecfaca824b1c6a67b31a6a448ff8b3b
 
 # livox_ros_driver2
 cd ${WORKSPACE}/src
@@ -122,6 +122,7 @@ cd ${WORKSPACE}/src
 git clone -b main 'https://github.com/LihanChen2004/livox_laser_simulation_ros2.git'
 cd ${WORKSPACE}/src/livox_laser_simulation_ros2
 git checkout -B main cee09dc9eea6e0a9822735bbc98c925441bbb019
+# git clone -b main 'https://github.com/stm32f303ret6/livox_laser_simulation_RO2'
 
 # FAST_LIO
 cd ${WORKSPACE}/src
@@ -150,9 +151,10 @@ fi
 
 # build
 cd ${WORKSPACE}
-rosdep update
-rosdep install -y --from-paths ./src --ignore-src
+# rosdep update
+# rosdep install -y --from-paths ./src --ignore-src
 colcon build --symlink-install
+# colcon build --symlink-install --parallel-workers 1
 
 # RTKLIB
 if [ ${INSTALL_RTKLIB} = ON ]
