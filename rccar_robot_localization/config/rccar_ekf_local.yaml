@@ -1,6 +1,6 @@
 # For parameter descriptions, please refer to the template parameter files for each node.
 
-ekf_filter_node_odom:
+ekf_filter_local_node:
   ros__parameters:
     frequency: 30.0
     sensor_timeout: 0.1
@@ -10,10 +10,10 @@ ekf_filter_node_odom:
     print_diagnostics: true
     debug: false
 
-    # map_frame: map
+    map_frame: map
     odom_frame: odom
     base_link_frame: base_link
-    # world_frame: map
+    world_frame: odom
 
     odom0: odometry/lidar
     odom0_config: [true,  true,  false,

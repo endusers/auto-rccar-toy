@@ -26,8 +26,8 @@ def generate_launch_description():
         Node(
             package='robot_localization', 
             executable='ekf_node', 
-            name='ekf_filter_node_odom',
-            output='screen',
+            name='ekf_filter_local_node',
+            output='both',
             parameters=[
                 parameters_file_path,
                 {"use_sim_time": use_sim_time},

@@ -44,22 +44,34 @@ def generate_launch_description():
         description='RViz config file path'
     )
 
-    if not use_sim_time :
-        lid_topic = '/lidar/points'
-        imu_topic = '/lidar/imu_raw'
-    else :
-        lid_topic = '/lidar/points_raw_PointCloud2'
-        imu_topic = '/lidar/imu_raw'
-
+    odom_frame_remap_node = Node(
+        package='odometry_frame_remap',
+        executable='odometry_frame_remap',
+        name='rccar_odometry_frame_remap_node',
+        parameters=[
+            {
+                'use_sim_time' : use_sim_time,
+                'new_frame_id' : 'odom',
+                'new_child_frame_id' : 'base_link',
+                'publish_tf' : False,
+            }
+        ],
+        remappings=[
+            ('/odom/in','/odometry/lidar_raw'),
+            ('/odom/out','/odometry/lidar'),
+        ],
+        output='both',
+    )
     fast_lio_node = Node(
         package='fast_lio',
         executable='fastlio_mapping',
-        parameters=[PathJoinSubstitution([config_path, config_file]),
-                    {
-                        'use_sim_time': use_sim_time,
-                        'common.lid_topic': lid_topic,
-                        'common.imu_topic': imu_topic
-                    }
+        parameters=[
+            PathJoinSubstitution([config_path, config_file]),
+            {
+                'use_sim_time' : use_sim_time,
+                'common.lid_topic' : '/lidar/points_raw_PointCloud2',
+                'common.imu_topic' : '/lidar/imu_raw' ,
+            }
         ],
         remappings=[
             ('/Odometry','/odometry/lidar_raw'),
@@ -80,6 +92,7 @@ def generate_launch_description():
     ld.add_action(declare_rviz_cmd)
     ld.add_action(declare_rviz_config_path_cmd)
 
+    ld.add_action(odom_frame_remap_node)
     ld.add_action(fast_lio_node)
     ld.add_action(rviz_node)
 

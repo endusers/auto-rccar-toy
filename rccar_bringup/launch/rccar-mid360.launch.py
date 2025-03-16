@@ -38,7 +38,7 @@ def generate_launch_description():
         executable='livox_ros_driver2_node',
         name='livox_lidar_publisher',
         remappings=[
-            ('/livox/lidar','/lidar/points'),
+            ('/livox/lidar','/lidar/points_raw_PointCloud2'),
             ('/livox/imu','/lidar/imu_raw')
         ],
         output='both',

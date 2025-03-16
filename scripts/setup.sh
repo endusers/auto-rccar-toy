@@ -130,10 +130,28 @@ git clone -b ROS2 https://github.com/hku-mars/FAST_LIO.git --recurse-submodules
 cd ${WORKSPACE}/src/FAST_LIO
 git checkout -B ROS2 a4743b095409588842a5b30ddfa27e29d2f99164 --recurse-submodules
 
+# lidar_localization_ros2
+cd ${WORKSPACE}/src
+git clone -b humble https://github.com/rsasaki0109/lidar_localization_ros2.git
+cd ${WORKSPACE}/src/lidar_localization_ros2
+git checkout -B humble 0745ccf18b486456cce697b41ec2fd6d816ab42b
+
+# ndt_omp_ros2
+cd ${WORKSPACE}/src
+git clone -b humble https://github.com/rsasaki0109/ndt_omp_ros2.git
+cd ${WORKSPACE}/src/ndt_omp_ros2
+git checkout -B humble 41bdfba539bb4fe8becd4bc6cf9cd5e5ad35dab1
+
 cd ${WORKSPACE}/src
 
 # auto-rccar-toy
 cp -rf ${DIR} ${WORKSPACE}/src/auto-rccar-toy
+
+# map extract
+unzip ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/empty.zip -d ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/
+unzip ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/smalltown.zip -d ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/
+unzip ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/cafe.zip -d ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/
+rm -rf ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/*.zip
 
 # update-src
 cp -rf ${DIR}/scripts/update-src/realsense-ros ${WORKSPACE}/src

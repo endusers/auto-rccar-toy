@@ -13,7 +13,8 @@ from launch.conditions import IfCondition
 def generate_launch_description():
     pkg_robot_description = get_package_share_directory('rccar_description')
     # world_file = 'empty.world'
-    world_file = 'smalltown.world'
+    # world_file = 'smalltown.world'
+    world_file = 'cafe.world'
     # model_file = os.path.join(pkg_robot_description, 'models', 'rccar-unimog', 'rccar-unimog.urdf.xacro')
     model_file = os.path.join(pkg_robot_description, 'models', 'rccar-bronco', 'rccar-bronco.urdf.xacro')
 
@@ -63,7 +64,7 @@ def generate_launch_description():
     declare_model_file_cmd = DeclareLaunchArgument(
         'model',
         default_value=model_file,
-        description='Path for model file to luse_sim_timeoad')
+        description='Path for model file to load')
 
     included_gazebo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(

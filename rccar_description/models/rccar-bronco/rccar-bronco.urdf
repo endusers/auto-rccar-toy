@@ -254,7 +254,7 @@
     <gravity>true</gravity>
     <sensor name="lidar_imu" type="imu">
       <always_on>true</always_on>
-      <update_rate>10</update_rate>
+      <update_rate>200</update_rate>
       <plugin filename="libgazebo_ros_imu_sensor.so" name="lidar_imu_plugin">
         <frame_name>lidar_link</frame_name>
         <ros>
@@ -263,6 +263,10 @@
       </plugin>
     </sensor>
   </gazebo>
+  <!-- <xacro:include filename="$(find rccar_description)/urdf/VLP-16.urdf.xacro" />
+  <xacro:VLP-16 parent="lidar_link" name="velodyne" topic="/velodyne_points" organize_cloud="false" hz="10" samples="440" gpu="false">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:VLP-16> -->
   <link name="base_link">
     <visual>
       <origin rpy="0 0 0" xyz="0.0 0.0 0.145"/>
