@@ -121,19 +121,19 @@
           </script>
         </material>
       </visual>
-      <visual name='base_link_fixed_joint_lump__camera_link_visual_3'>
-        <pose>-0.0133 0 0.2915 0 -0 0</pose>
-        <geometry>
-          <box>
-            <size>0.02505 0.09 0.025</size>
-          </box>
-        </geometry>
-      </visual>
-      <visual name='base_link_fixed_joint_lump__lidar_link_visual_4'>
+      <visual name='base_link_fixed_joint_lump__livox_frame_visual_3'>
         <pose>-0.094 0 0.309 0 -0 0</pose>
         <geometry>
           <box>
             <size>0.1 0.06 0.06</size>
+          </box>
+        </geometry>
+      </visual>
+      <visual name='base_link_fixed_joint_lump__camera_link_visual_4'>
+        <pose>-0.0133 0 0.2915 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.02505 0.09 0.025</size>
           </box>
         </geometry>
       </visual>
@@ -177,6 +177,56 @@
           </ros>
         </plugin>
         <pose>0.151 0 0.152 0 -0 0</pose>
+      </sensor>
+      <gravity>1</gravity>
+      <sensor name='lidar_imu' type='imu'>
+        <always_on>1</always_on>
+        <update_rate>200</update_rate>
+        <plugin name='lidar_imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+          <frame_name>livox_frame</frame_name>
+          <ros>
+            <remapping>~/out:=/lidar/imu_raw</remapping>
+          </ros>
+        </plugin>
+        <pose>-0.094 0 0.309 0 -0 0</pose>
+      </sensor>
+      <sensor name='livox_frame' type='ray'>
+        <visualize>1</visualize>
+        <update_rate>10</update_rate>
+        <plugin name='livox_frame_plugin' filename='libros2_livox.so'>
+          <ray>
+            <scan>
+              <horizontal>
+                <samples>100</samples>
+                <resolution>1</resolution>
+                <min_angle>0</min_angle>
+                <max_angle>6.2831852</max_angle>
+              </horizontal>
+              <vertical>
+                <samples>360</samples>
+                <resolution>1</resolution>
+                <min_angle>-0.12601276984444446</min_angle>
+                <max_angle>0.9637707965111111</max_angle>
+              </vertical>
+            </scan>
+            <range>
+              <min>0.1</min>
+              <max>200.0</max>
+              <resolution>0.002</resolution>
+            </range>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.01</stddev>
+            </noise>
+          </ray>
+          <visualize>0</visualize>
+          <samples>40000</samples>
+          <downsample>1</downsample>
+          <csv_file_name>/home/docker/mnt/rccar_ws/install/rccar_description/share/rccar_description/scan_mode/mid360.csv</csv_file_name>
+          <topic>lidar/points_raw</topic>
+        </plugin>
+        <pose>-0.094 0 0.309 0 -0 0</pose>
       </sensor>
       <sensor name='cameradepth' type='depth'>
         <camera name='camera'>
@@ -280,56 +330,6 @@
           </ros>
         </plugin>
         <pose>-0.02504 0.01198 0.2966 -1.5708 -0 -1.5708</pose>
-      </sensor>
-      <gravity>1</gravity>
-      <sensor name='lidar_imu' type='imu'>
-        <always_on>1</always_on>
-        <update_rate>200</update_rate>
-        <plugin name='lidar_imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
-          <frame_name>lidar_link</frame_name>
-          <ros>
-            <remapping>~/out:=/lidar/imu_raw</remapping>
-          </ros>
-        </plugin>
-        <pose>-0.094 0 0.309 0 -0 0</pose>
-      </sensor>
-      <sensor name='lidar_link' type='ray'>
-        <visualize>1</visualize>
-        <update_rate>10</update_rate>
-        <plugin name='lidar_link_plugin' filename='libros2_livox.so'>
-          <ray>
-            <scan>
-              <horizontal>
-                <samples>100</samples>
-                <resolution>1</resolution>
-                <min_angle>0</min_angle>
-                <max_angle>6.2831852</max_angle>
-              </horizontal>
-              <vertical>
-                <samples>360</samples>
-                <resolution>1</resolution>
-                <min_angle>-0.12601276984444446</min_angle>
-                <max_angle>0.9637707965111111</max_angle>
-              </vertical>
-            </scan>
-            <range>
-              <min>0.1</min>
-              <max>200.0</max>
-              <resolution>0.002</resolution>
-            </range>
-            <noise>
-              <type>gaussian</type>
-              <mean>0.0</mean>
-              <stddev>0.01</stddev>
-            </noise>
-          </ray>
-          <visualize>0</visualize>
-          <samples>40000</samples>
-          <downsample>1</downsample>
-          <csv_file_name>/home/docker/mnt/rccar_ws/install/rccar_description/share/rccar_description/scan_mode/mid360.csv</csv_file_name>
-          <topic>lidar/points_raw</topic>
-        </plugin>
-        <pose>-0.094 0 0.309 0 -0 0</pose>
       </sensor>
     </link>
     <joint name='front_left_mount_joint' type='revolute'>

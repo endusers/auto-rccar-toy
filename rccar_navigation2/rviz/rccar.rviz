@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /TF1/Frames1
         - /AerialMap1/Topic1
         - /Map1/Topic1
         - /CameraPoints1/Topic1
@@ -78,6 +79,10 @@ Visualization Manager:
           Value: false
         camera_gyro_optical_frame:
           Value: false
+        camera_imu_frame:
+          Value: false
+        camera_imu_optical_frame:
+          Value: false
         camera_infra1_frame:
           Value: false
         camera_infra1_optical_frame:
@@ -102,6 +107,8 @@ Visualization Manager:
           Value: false
         lidar_link:
           Value: false
+        livox_frame:
+          Value: false
         map:
           Value: true
         odom:
@@ -115,8 +122,6 @@ Visualization Manager:
         rear_right_mount:
           Value: false
         rear_right_wheel:
-          Value: false
-        utm:
           Value: false
       Marker Scale: 1
       Name: TF
@@ -141,6 +146,9 @@ Visualization Manager:
                   camera_gyro_frame:
                     camera_gyro_optical_frame:
                       {}
+                    camera_imu_frame:
+                      camera_imu_optical_frame:
+                        {}
                   camera_infra1_frame:
                     camera_infra1_optical_frame:
                       {}
@@ -148,25 +156,22 @@ Visualization Manager:
                     camera_infra2_optical_frame:
                       {}
               front_left_mount:
-                {}
-              front_left_wheel:
-                {}
+                front_left_wheel:
+                  {}
               front_right_mount:
-                {}
-              front_right_wheel:
-                {}
+                front_right_wheel:
+                  {}
               gps_link:
                 {}
               lidar_link:
-                {}
+                livox_frame:
+                  {}
               rear_left_mount:
-                {}
-              rear_left_wheel:
-                {}
+                rear_left_wheel:
+                  {}
               rear_right_mount:
-                {}
-              rear_right_wheel:
-                {}
+                rear_right_wheel:
+                  {}
           pcl_pose:
             {}
       Update Interval: 0
@@ -277,6 +282,10 @@ Visualization Manager:
           Show Trail: false
           Value: true
         lidar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        livox_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -652,7 +661,7 @@ Visualization Manager:
         Durability Policy: Volatile
         Filter size: 10
         History Policy: Keep Last
-        Reliability Policy: System Default
+        Reliability Policy: Best Effort
         Value: /camera/scan/cloud
       Use Fixed Frame: true
       Use rainbow: true
@@ -686,7 +695,7 @@ Visualization Manager:
         Durability Policy: Volatile
         Filter size: 10
         History Policy: Keep Last
-        Reliability Policy: System Default
+        Reliability Policy: Best Effort
         Value: /camera/scan/depth
       Use Fixed Frame: true
       Use rainbow: true
@@ -754,7 +763,7 @@ Visualization Manager:
         Durability Policy: Volatile
         Filter size: 10
         History Policy: Keep Last
-        Reliability Policy: Reliable
+        Reliability Policy: Best Effort
         Value: /lidar/scan/cloud
       Use Fixed Frame: true
       Use rainbow: true
@@ -873,5 +882,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 50
+  X: 70
   Y: 50

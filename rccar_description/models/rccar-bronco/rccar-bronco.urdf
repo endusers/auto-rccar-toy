@@ -250,13 +250,13 @@
       <robot_base_frame>base_link</robot_base_frame>
     </plugin>
   </gazebo>
-  <gazebo reference="lidar_link">
+  <gazebo reference="livox_frame">
     <gravity>true</gravity>
     <sensor name="lidar_imu" type="imu">
       <always_on>true</always_on>
       <update_rate>200</update_rate>
       <plugin filename="libgazebo_ros_imu_sensor.so" name="lidar_imu_plugin">
-        <frame_name>lidar_link</frame_name>
+        <frame_name>livox_frame</frame_name>
         <ros>
           <remapping>~/out:=/lidar/imu_raw</remapping>
         </ros>
@@ -416,7 +416,13 @@
     <parent link="camera_gyro_frame"/>
     <child link="camera_gyro_optical_frame"/>
   </joint>
-  <link name="lidar_link">
+  <link name="lidar_link"/>
+  <joint name="base_link_to_lidar_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin rpy="0 0 0" xyz="-0.094 0.0 0.309"/>
+  </joint>
+  <link name="livox_frame">
     <inertial>
       <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="0 0 0"/>
       <mass value="0.1"/>
@@ -428,18 +434,18 @@
       </geometry>
     </visual>
   </link>
-  <joint name="lidar_link_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="lidar_link"/>
-    <origin rpy="0 0 0" xyz="-0.094 0.0 0.309"/>
+  <joint name="livox_frame_joint" type="fixed">
+    <parent link="lidar_link"/>
+    <child link="livox_frame"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
   </joint>
-  <gazebo reference="lidar_link">
-    <sensor name="lidar_link" type="ray">
+  <gazebo reference="livox_frame">
+    <sensor name="livox_frame" type="ray">
       <pose>0 0 0 0 0 0</pose>
       <visualize>true</visualize>
       <update_rate>10</update_rate>
       <!-- This ray plgin is only for visualization. -->
-      <plugin filename="libros2_livox.so" name="lidar_link_plugin">
+      <plugin filename="libros2_livox.so" name="livox_frame_plugin">
         <ray>
           <scan>
             <horizontal>

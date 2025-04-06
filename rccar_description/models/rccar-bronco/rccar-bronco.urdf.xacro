@@ -57,8 +57,16 @@
     <origin xyz="-0.0239 0.0 0.279" rpy="0 0 0"/>
   </xacro:sensor_d435i>
 
-  <xacro:mid360 name="lidar_link" parent="base_link" topic="lidar/points_raw">
+  <link name="lidar_link"/>
+
+  <joint name="base_link_to_lidar_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link" />
     <origin xyz="-0.094 0.0 0.309" rpy="0 0 0"/>
+  </joint>
+
+  <xacro:mid360 name="livox_frame" parent="lidar_link" topic="lidar/points_raw">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:mid360>
 
   <xacro:macro name="wheel" params="prefix suffix x y z mode">
