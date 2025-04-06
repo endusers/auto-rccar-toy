@@ -152,7 +152,7 @@ def generate_launch_description():
     )
 
     delayed_ekf_global_launch = TimerAction(
-        period =25.0,
+        period = 25.0,
         actions=[included_ekf_global_launch]
     )
 
