@@ -15,7 +15,7 @@ ekf_filter_global_node:
     base_link_frame: base_link
     world_frame: map
 
-    pose0: pcl_pose
+    pose0: pose/scan_matching
     pose0_config: [true,  true,  false,
                    false, false, false,
                    false, false, false,

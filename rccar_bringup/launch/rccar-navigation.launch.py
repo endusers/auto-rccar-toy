@@ -10,6 +10,7 @@ from launch.actions import SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch.conditions import IfCondition, UnlessCondition
 
 
 def generate_launch_description():
@@ -19,35 +20,25 @@ def generate_launch_description():
     # map_yaml_file = os.path.join(get_package_share_directory('rccar_navigation2'), 'map', 'smalltown', 'map.yaml')
     map_yaml_file = os.path.join(get_package_share_directory('rccar_navigation2'), 'map', 'cafe', 'map.yaml')
 
+    use_sim_time = LaunchConfiguration('use_sim_time')
+    gnss_only = LaunchConfiguration('gnss_only')
+    map_file = LaunchConfiguration('map')
+
     declare_use_sim_time_cmd = DeclareLaunchArgument(
         'use_sim_time',
         default_value='false',
         description='Use simulation (Gazebo) clock if true')
 
+    declare_gnss_only_cmd = DeclareLaunchArgument(
+        'gnss_only',
+        default_value='false',
+        description='Use only gnss if true'
+    )
+
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
         default_value=map_yaml_file,
         description='Path for map yaml file to load')
-
-    declare_autostart_cmd = DeclareLaunchArgument(
-        'autostart', default_value='true',
-        description='Automatically startup the nav2 stack')
-
-    declare_params_file_cmd = DeclareLaunchArgument(
-        'params_file',
-        default_value=os.path.join(
-            get_package_share_directory('rccar_navigation2'), 'config', 'rccar_nav2_params.yaml'),
-        description='Full path to the ROS2 parameters file to use for all launched nodes')
-
-    declare_log_level_cmd = DeclareLaunchArgument(
-        'log_level', default_value='info',
-        description='log level')
-
-    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
-
-    autostart = LaunchConfiguration('autostart')
-    params_file = LaunchConfiguration('params_file')
-    log_level = LaunchConfiguration('log_level')
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
@@ -68,7 +59,7 @@ def generate_launch_description():
             name='map_server',
             output='both',
             parameters=[{'use_sim_time': use_sim_time},
-                        {'yaml_filename': map_yaml_file}],
+                        {'yaml_filename': map_file}],
             remappings=remappings
     )
 
@@ -78,8 +69,19 @@ def generate_launch_description():
         name='lifecycle_manager_mapserver',
         output='both',
         parameters=[{'use_sim_time': use_sim_time},
-                    {'autostart': autostart},
+                    {'autostart': True},
                     {'node_names': ['map_server']}]
+    )
+
+    navigation2_gnss_only_nodes = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            get_package_share_directory('rccar_navigation2'), 'launch', 'rccar-nav2-gnss-only.launch.py')),
+        launch_arguments={
+            'use_sim_time': use_sim_time,
+            'use_lifecycle_mgr': 'false',
+            'map_subscribe_transient_local': 'true',
+        }.items(),
+        condition = IfCondition( gnss_only )
     )
 
     navigation2_nodes = IncludeLaunchDescription(
@@ -87,12 +89,10 @@ def generate_launch_description():
             get_package_share_directory('rccar_navigation2'), 'launch', 'rccar-nav2.launch.py')),
         launch_arguments={
             'use_sim_time': use_sim_time,
-            'autostart': autostart,
-            'params_file': params_file,
             'use_lifecycle_mgr': 'false',
             'map_subscribe_transient_local': 'true',
-            'log_level': log_level
-        }.items()
+        }.items(),
+        condition = UnlessCondition( gnss_only )
     )
 
     # Create the launch description and populate
@@ -103,14 +103,13 @@ def generate_launch_description():
 
     # Declare the launch options
     ld.add_action(declare_use_sim_time_cmd)
+    ld.add_action(declare_gnss_only_cmd)
     ld.add_action(declare_map_yaml_cmd)
-    ld.add_action(declare_autostart_cmd)
-    ld.add_action(declare_params_file_cmd)
-    ld.add_action(declare_log_level_cmd)
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(map_server_node)
     ld.add_action(lifecycle_manager_mapserver)
+    ld.add_action(navigation2_gnss_only_nodes)
     ld.add_action(navigation2_nodes)
 
     return ld

@@ -39,9 +39,14 @@ def generate_launch_description():
         package='pcl_localization_ros2',
         executable='pcl_localization_node',
         parameters=[localization_param_dir, {'map_path' : map_file}],
-        remappings=[('/velodyne_points','/lidar/points_raw_PointCloud2'), ('/imu', '/camera/imu')],
-        # remappings=[('/velodyne_points','/cloud_registered'), ('/imu', '/camera/imu')],
-        # remappings=[('/velodyne_points','/velodyne_points'), ('/imu', '/camera/imu')],
+        remappings=[
+            ('/velodyne_points','/lidar/points_raw_PointCloud2'),
+            # ('/velodyne_points','/cloud_registered'),
+            # ('/velodyne_points','/lidar/velodyne_points'),
+            ('/imu', '/camera/imu'),
+            ('/map', '/map/pcl_localization'),
+            ('/pcl_pose', '/pose/scan_matching')
+        ],
         output='both')
 
     to_inactive = launch.actions.EmitEvent(

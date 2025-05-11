@@ -144,24 +144,24 @@ local_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan_clear scan_mark
-        scan_clear:
-          topic: /camera/scan/cloud
+        observation_sources: scan_lidar scan_depth
+        scan_lidar:
+          topic: /lidar/scan/cloud
           data_type: "LaserScan"
           min_obstacle_height: 0.1
           max_obstacle_height: 2.0
           inf_is_valid: True
           clearing: True
-          marking: False
+          marking: True
           obstacle_range: 3.0
           raytrace_range: 4.0
-        scan_mark:
+        scan_depth:
           topic: /camera/scan/depth
           data_type: "LaserScan"
           min_obstacle_height: 0.1
           max_obstacle_height: 2.0
           inf_is_valid: True
-          clearing: False
+          clearing: True
           marking: True
           obstacle_range: 3.0
           raytrace_range: 4.0
@@ -210,24 +210,24 @@ global_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan_clear scan_mark
-        scan_clear:
-          topic: /camera/scan/cloud
+        observation_sources: scan_lidar scan_depth
+        scan_lidar:
+          topic: /lidar/scan/cloud
           data_type: "LaserScan"
           min_obstacle_height: 0.1
           max_obstacle_height: 2.0
           inf_is_valid: True
           clearing: True
-          marking: False
+          marking: True
           obstacle_range: 3.0
           raytrace_range: 4.0
-        scan_mark:
+        scan_depth:
           topic: /camera/scan/depth
           data_type: "LaserScan"
           min_obstacle_height: 0.1
           max_obstacle_height: 2.0
           inf_is_valid: True
-          clearing: False
+          clearing: True
           marking: True
           obstacle_range: 3.0
           raytrace_range: 4.0
