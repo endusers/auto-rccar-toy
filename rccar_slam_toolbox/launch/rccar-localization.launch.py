@@ -14,7 +14,7 @@ def generate_launch_description():
 
     declare_use_sim_time_argument = DeclareLaunchArgument(
         'use_sim_time',
-        default_value='true',
+        default_value='false',
         description='Use simulation/Gazebo clock')
 
     declare_slam_params_file_cmd = DeclareLaunchArgument(
@@ -24,7 +24,7 @@ def generate_launch_description():
         description='Full path to the ROS2 parameters file to use for the slam_toolbox node')
 
     declare_map_posegraph_cmd = DeclareLaunchArgument(
-        'map_posegraph',
+        'map',
         default_value='test_steve',
         description='Path for map posegraph file to load')
 
@@ -33,7 +33,8 @@ def generate_launch_description():
           slam_params_file,
           {'use_sim_time': use_sim_time},
           {'map_file_name' : map_file},
-          {'map_start_pose': [0.0, 0.0, 0.0]}
+          {'map_start_pose': [0.0, 0.0, 0.0]},
+          {'map_start_at_dock' : True}
         ],
         remappings=[('/map','/map/slam_toolbox'), ('/pose','/pose/scan_matching')],
         package='slam_toolbox',

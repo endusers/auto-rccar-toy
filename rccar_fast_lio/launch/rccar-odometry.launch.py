@@ -70,7 +70,7 @@ def generate_launch_description():
             {
                 'use_sim_time' : use_sim_time,
                 'common.lid_topic' : '/lidar/points_raw_PointCloud2',
-                'common.imu_topic' : '/lidar/imu_raw' ,
+                'common.imu_topic' : '/lidar/imu' ,
             }
         ],
         remappings=[
