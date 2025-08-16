@@ -47,7 +47,7 @@ def generate_launch_description():
     odom_frame_remap_node = Node(
         package='odometry_frame_remap',
         executable='odometry_frame_remap',
-        name='rccar_odometry_frame_remap_node',
+        name='odometry_lidar_frame_remap_node',
         parameters=[
             {
                 'use_sim_time' : use_sim_time,

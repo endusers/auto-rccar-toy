@@ -14,7 +14,7 @@ def generate_launch_description():
 
     robot_localization_dir = get_package_share_directory('rccar_robot_localization')
     parameters_file_dir = os.path.join(robot_localization_dir, 'config')
-    parameters_file_path = os.path.join(parameters_file_dir, 'rccar_ekf_gnss_only.yaml')
+    parameters_file_path = os.path.join(parameters_file_dir, 'rccar_ekf_global_gnss.yaml')
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -24,9 +24,28 @@ def generate_launch_description():
         ),
 
         Node(
+            package='odometry_frame_remap',
+            executable='odometry_frame_remap',
+            name='odometry_gps_frame_remap_node',
+            parameters=[
+                {
+                    'use_sim_time' : use_sim_time,
+                    'new_frame_id' : 'map',
+                    'new_child_frame_id' : '',
+                    'publish_tf' : False,
+                }
+            ],
+            remappings=[
+                ('/odom/in','/odometry/gps_raw'),
+                ('/odom/out','/odometry/gps'),
+            ],
+            output='both',
+        ),
+
+        Node(
             package='robot_localization', 
             executable='ekf_node', 
-            name='ekf_filter_gnss_only_node',
+            name='ekf_filter_global_gnss_node',
             output='screen',
             parameters=[
                 parameters_file_path,

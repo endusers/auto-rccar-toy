@@ -1,6 +1,6 @@
 # For parameter descriptions, please refer to the template parameter files for each node.
 
-ekf_filter_gnss_only_node:
+ekf_filter_global_gnss_node:
   ros__parameters:
     frequency: 30.0
     sensor_timeout: 0.1

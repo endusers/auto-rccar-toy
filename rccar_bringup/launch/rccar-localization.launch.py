@@ -17,12 +17,12 @@ def generate_launch_description():
     map_posegraph_file = os.path.join(get_package_share_directory('rccar_navigation2'), 'map', 'cafe', 'map')
 
     use_sim_time = LaunchConfiguration('use_sim_time')
-    gnss_only = LaunchConfiguration('gnss_only')
     use_gnss = LaunchConfiguration('use_gnss')
     use_camera = LaunchConfiguration('use_camera')
     use_lidar = LaunchConfiguration('use_lidar')
     use_3d_matching = LaunchConfiguration('use_3d_matching')
     use_2d_matching = LaunchConfiguration('use_2d_matching')
+    use_gnss_fix = LaunchConfiguration('use_gnss_fix')
     map_pcd = LaunchConfiguration('map_pcd')
     map_posegraph = LaunchConfiguration('map_posegraph')
 
@@ -30,12 +30,6 @@ def generate_launch_description():
         'use_sim_time',
         default_value='false',
         description='Use simulation (Gazebo) clock if true'
-    )
-
-    declare_gnss_only_cmd = DeclareLaunchArgument(
-        'gnss_only',
-        default_value='false',
-        description='Use only gnss if true'
     )
 
     declare_use_gnss_cmd = DeclareLaunchArgument(
@@ -64,8 +58,14 @@ def generate_launch_description():
 
     declare_use_2d_matching_cmd = DeclareLaunchArgument(
         'use_2d_matching',
-        default_value='true',
+        default_value='false',
         description='Use 2d scan matching if true'
+    )
+
+    declare_use_gnss_fix_cmd = DeclareLaunchArgument(
+        'use_gnss_fix',
+        default_value='true',
+        description='Use gnss fix if true'
     )
 
     declare_map_pcd_cmd = DeclareLaunchArgument(
@@ -89,22 +89,7 @@ def generate_launch_description():
         launch_arguments={
             'use_sim_time': use_sim_time,
         }.items(),
-        # condition = IfCondition( use_gnss )
-        condition = IfCondition( gnss_only )
-    )
-
-    included_ekf_gnss_only_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(
-                get_package_share_directory( 'rccar_robot_localization' ),
-                'launch',
-                'rccar-ekf-gnss-only.launch.py'
-            )
-        ),
-        launch_arguments={
-            'use_sim_time': use_sim_time,
-        }.items(),
-        condition = IfCondition( gnss_only )
+        condition = IfCondition( use_gnss )
     )
 
     included_fast_lio_odometry_launch = IncludeLaunchDescription(
@@ -179,6 +164,20 @@ def generate_launch_description():
         condition = IfCondition( use_lidar )
     )
 
+    included_ekf_global_gnss_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory( 'rccar_robot_localization' ),
+                'launch',
+                'rccar-ekf-global-gnss.launch.py'
+            )
+        ),
+        launch_arguments={
+            'use_sim_time': use_sim_time,
+        }.items(),
+        condition = IfCondition( use_gnss_fix )
+    )
+
     delayed_ekf_local_launch = TimerAction(
         period = 10.0,
         actions=[included_ekf_local_launch]
@@ -194,24 +193,30 @@ def generate_launch_description():
         actions=[included_ekf_global_launch]
     )
 
+    delayed_ekf_global_gnss_launch = TimerAction(
+        period = 25.0,
+        actions=[included_ekf_global_gnss_launch]
+    )
+
     return LaunchDescription([
         declare_use_sim_time_cmd,
-        declare_gnss_only_cmd,
         declare_use_gnss_cmd,
         declare_use_camera_cmd,
         declare_use_lidar_cmd,
         declare_use_3d_matching_cmd,
         declare_use_2d_matching_cmd,
+        declare_use_gnss_fix_cmd,
         declare_map_pcd_cmd,
         declare_map_posegraph_cmd,
         included_navsat_transform_launch,
-        included_ekf_gnss_only_launch,
         included_fast_lio_odometry_launch,
         delayed_ekf_local_launch,
         delayed_pcl_launch,
         delayed_ekf_global_launch,
+        delayed_ekf_global_gnss_launch,
         # included_ekf_local_launch,
         # included_pcl_localization_launch,
         # included_slam_toolbox_launch,
         # included_ekf_global_launch,
+        # included_ekf_global_gnss_launch,
     ])
