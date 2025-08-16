@@ -142,6 +142,12 @@ git clone -b humble https://github.com/rsasaki0109/ndt_omp_ros2.git
 cd ${WORKSPACE}/src/ndt_omp_ros2
 git checkout -B humble 41bdfba539bb4fe8becd4bc6cf9cd5e5ad35dab1
 
+# cxd5602pwbimu_localizer_node
+cd ${WORKSPACE}/src
+git clone -b main https://github.com/hijimasa/cxd5602pwbimu_localizer_node.git
+cd ${WORKSPACE}/src/cxd5602pwbimu_localizer_node
+git checkout -B main c0ed0eebbe2b422c67cc07f4c7da10d420fe46cb
+
 cd ${WORKSPACE}/src
 
 # auto-rccar-toy
