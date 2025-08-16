@@ -54,7 +54,7 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz_default_plugins/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
@@ -378,8 +378,8 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: false
-      Keep: 100
+      Enabled: true
+      Keep: 3
       Name: OdometryGlobal
       Position Tolerance: 0.10000000149011612
       Shape:
@@ -418,7 +418,7 @@ Visualization Manager:
           Value: true
         Value: true
       Enabled: false
-      Keep: 100
+      Keep: 3
       Name: OdometryLocal
       Position Tolerance: 0.10000000149011612
       Shape:
