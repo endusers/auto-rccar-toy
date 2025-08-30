@@ -72,7 +72,7 @@
       <plugin filename="libgazebo_ros_gps_sensor.so" name="gazebo_ros_gps_sensor">
         <frame_name>gps_link</frame_name>
         <ros>
-          <remapping>~/out:=/gnss/fix</remapping>
+          <remapping>~/out:=/gnss/fix_raw</remapping>
         </ros>
       </plugin>
     </sensor>

@@ -5,7 +5,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument,IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, OrSubstitution
 from launch.conditions import IfCondition, UnlessCondition
 
 
@@ -161,7 +161,7 @@ def generate_launch_description():
         launch_arguments={
             'use_sim_time': use_sim_time,
         }.items(),
-        condition = IfCondition( use_lidar )
+        condition = IfCondition( OrSubstitution( use_2d_matching, use_3d_matching ) )
     )
 
     included_ekf_global_gnss_launch = IncludeLaunchDescription(

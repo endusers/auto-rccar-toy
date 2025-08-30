@@ -30,8 +30,7 @@ def generate_launch_description():
 
     declare_use_gnss_cmd = DeclareLaunchArgument(
         'use_gnss',
-        default_value='false',
-        # default_value='true',
+        default_value='true',
         description='Use gnss if true'
     )
 

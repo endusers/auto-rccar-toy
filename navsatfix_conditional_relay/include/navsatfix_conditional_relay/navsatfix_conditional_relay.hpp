@@ -1,0 +1,34 @@
+/**
+ * @file navsatfix_conditional_relay.hpp
+ * 
+ * @brief       navsatfix_conditional_relay
+ * @note        なし
+ * 
+ * @version     1.0.0
+ * @date        2025/08/30
+ * 
+ * @copyright   (C) 2025 Motoyuki Endo
+ */
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <sensor_msgs/msg/nav_sat_status.hpp>
+#include <std_msgs/msg/int8.hpp>
+
+class NavSatFixConditionalRelay : public rclcpp::Node
+{
+	public:
+		NavSatFixConditionalRelay();
+		~NavSatFixConditionalRelay();
+
+	private:
+		int8_t relay_threshold_;
+		bool enable_status_override_;
+		int8_t override_status_;
+
+		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr parameterSubscription_;
+		rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr subscriber_;
+		rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr publisher_;
+
+		void GnssCallback( const sensor_msgs::msg::NavSatFix::SharedPtr msg );
+		void UpdateParameters( const rcl_interfaces::msg::ParameterEvent::SharedPtr event );
+};
