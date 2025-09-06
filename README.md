@@ -3,19 +3,25 @@
 ## はじめに
 
 本ソフトはRCカーを自律走行させるソフトである  
-ローカライゼーションはRTK-GNSSのみで、ナビゲーションはNav2を使用  
+ローカライゼーションはRTK-GNSSとLiDARとIMUを使用  
+ナビゲーションはNav2を使用している  
 方向検出や障害物検出にCameraのIMUやDepthも使用している  
 
 <table>
 <tr>
-<td><img width="240" src="./assets/image/DSC_0967.JPG"></td>
-<td><img width="240" src="./assets/image/DSC_0968.JPG"></td>
-<td><img width="240" src="./assets/image/DSC_0969.JPG"></td>
+<td><img width="240" src="./assets/image/bronco-001.jpg"></td>
+<td><img width="240" src="./assets/image/bronco-002.jpg"></td>
+<td><img width="240" src="./assets/image/bronco-003.jpg"></td>
 </tr>
 <tr>
-<td><img width="240" src="./assets/image/DSC_0962.JPG"></td>
-<td><img width="240" src="./assets/image/DSC_0965.JPG"></td>
-<td><img width="240" src="./assets/image/DSC_0966.JPG"></td>
+<td><img width="240" src="./assets/image/bronco-004.jpg"></td>
+<td><img width="240" src="./assets/image/bronco-005.jpg"></td>
+<td><img width="240" src="./assets/image/bronco-006.jpg"></td>
+</tr>
+<tr>
+<td><img width="240" src="./assets/image/bronco-007.jpg"></td>
+<td><img width="240" src="./assets/image/bronco-008.jpg"></td>
+<td><img width="240" src="./assets/image/bronco-009.jpg"></td>
 </tr>
 </table>
 
@@ -24,25 +30,35 @@
 - ハードウェア
 
   - RCカー
-    - 1/10RC メルセデス・ベンツ ウニモグ 406 (CC-02シャーシ)
-    - OP.1895 タミヤ ブラシレスモーター 02 センサー付 21.5T
-    - タミヤ ブラシレス エレクトロニック スピードコントローラー 04SR センサー付
-    - タミヤ AO-5052 TSU-03サーボ
+    - 1/10RC フォード ブロンコ 2021 (CC-02シャーシ)
+    - ホイール仕様
+      - Goolsky AUSTAR 110mm 1.9インチ リム ラバー タイヤ ホイール
+      - HOBBYWING COMBO-XR10 Justock G3S ESC & 3650 SD G2.1 ブラシレスモーター 25.5T
+      - HOOYIJ DS3245SG 45kg サーボ 270°
+      - M5 AtomS3R
+    - トラックユニット仕様
+      - OP.1948 トラックユニット コンバージョン
+      - HOBBYWING QuicRUN 540 ブラシモーター 30T
+      - HOBBYWING QuicRUN-WP-1080-G2-Brushed
+      - FLASH HOBBY M35CHW 35KG サーボ 180°
+      - M5 ATOM Matrix
     - バッテリー(G-FORCE BULLET LiPo 7.4V 3000mAh)
-    - M5 ATOM Matrix
   - Jetson
-    - Jetson Xavier NX
-    - Seeed Studio A203 (Version 2) Carrier Board for Jetson Nano/Xavier NX
-    - バッテリー(Anker PowerCore 10000 PD Redux 25W)
-    - PDトリガーケーブル(WITRN PDC003 20V)
-    - FAN(Jetson NX モジュール用)
+    - Jetson Orin NX
+    - Seeed Studio A603 Carrier Board for Jetson Orin NX/Orin Nano
+    - Jetson Orin NX モジュール用 ファン付きアルミヒートシンク
     - WiFi(Intel Dual Band Wireless-AC 8265 8265NGW)
     - WiFi アンテナ(BOOBRIE ワイヤレスモジュール小型WIFIアンテナ)
-    - SSD(Oemgenuine Kioxia 256GB M.2 PCI-e NVME SSD 内蔵 5SS0V26415)
+    - SSD(トランセンドジャパン トランセンド 1TB PCIe SSD M.2(2242) NVMe PCIe Gen3×4 M Key TS1TMTE400S)
   - センサ
-    - Realsense D435i
+    - Realsense D435if
     - Ublox F9P
     - Ublox 2周波対応 アンテナ(ANN-MB-00)
+    - Livox Mid-360
+  - 電源(Jetsonとセンサ用)
+    - バッテリー(CIO SMARTCOBY TRIO 67W 20000mAh)  
+    or
+    - バッテリー(Anker Power Bank 10000mAh 30W)  
   - その他
     - その他配線や部品
 
@@ -56,7 +72,7 @@
 
   - Package
 
-    必要となるパッケージは [Dockerfile](https://github.com/endusers/humble-official-01/blob/main/ros-humble-official/Dockerfile) を参照してください  
+    必要となるパッケージは [Dockerfile](https://github.com/endusers/ros-humble-utility/blob/main/docker/Dockerfile) を参照してください  
 
 ## 構成図
 
@@ -109,22 +125,26 @@ T.B.A
 1. シミュレーション環境を立ち上げる
 
     ```bash
-    ros2 launch rccar_bringup rccar-simulation.launch.xml world:=smalltown.world
+    ros2 launch rccar_bringup rccar-simulation.launch.py world:=smalltown.world
     ```
 
     ※初回起動はエラーになるため、Gazeboが立ち上がった後に、再度立ち上げなおしてください  
+    ※ワールドの変更は launchのパラメータに world:={WORLD FILE NAME} にて指定
 
 1. ローカライゼーションを立ち上げる
 
     ```bash
-    ros2 launch rccar_robot_localization rccar-localization.launch.xml use_sim_time:=true
+    ros2 launch rccar_bringup rccar-localization.launch.py use_sim_time:=true
     ```
 
 1. ナビゲーションを立ち上げる
 
     ```bash
-    ros2 launch rccar_navigation2 rccar-navigation.launch.py use_sim_time:=true map:=smalltown_world.yaml
+    MAP_DIR=$(ros2 pkg prefix rccar_navigation2)/share/rccar_navigation2/map
+    ros2 launch rccar_bringup rccar-navigation.launch.py use_sim_time:=true map:=$MAP_DIR/smalltown/smalltown_world.yaml
     ```
+
+    ※マップの変更は launchのパラメータに map:={YAML FILE PATH} にて指定
 
 1. Rviz2を立ち上げる
 
@@ -153,25 +173,19 @@ T.B.A
 1. JetsonにSSHで接続しロボットを立ち上げる
 
     ```bash
-    ros2 launch rccar_bringup rccar-robot.launch.xml
-    ```
-
-1. JetsonにSSHで接続しカメラを立ち上げる
-
-    ```bash
-    ros2 launch rccar_bringup rccar-camera.launch.xml
+    ros2 launch rccar_bringup rccar-robot.launch.py
     ```
 
 1. JetsonにSSHで接続しローカライゼーションを立ち上げる
 
     ```bash
-    ros2 launch rccar_robot_localization rccar-localization.launch.xml
+    ros2 launch rccar_bringup rccar-localization.launch.py
     ```
 
 1. JetsonにSSHで接続しナビゲーションを立ち上げる
 
     ```bash
-    ros2 launch rccar_navigation2 rccar-navigation.launch.py
+    ros2 launch rccar_bringup rccar-navigation.launch.py
     ```
 
 1. ホストPCでRviz2を立ち上げる
@@ -222,6 +236,6 @@ T.B.A
     本ソフトを動かすためのROSのDocker環境を下記ディレクトリにサブモジュールとして登録済み  
     詳細は下記リポジトリを参照してください  
 
-    [auto-rccar-toy/env/humble-official-01](https://github.com/endusers/humble-official-01)  
+    [auto-rccar-toy/env/ros-humble-utility](https://github.com/endusers/ros-humble-utility)  
 
-    物理PCにセットアップしたい場合で必要となるパッケージは [Dockerfile](https://github.com/endusers/humble-official-01/blob/main/ros-humble-official/Dockerfile) を参照してください  
+    物理PCにセットアップしたい場合で必要となるパッケージは [Dockerfile](https://github.com/endusers/ros-humble-utility/blob/main/docker/Dockerfile) を参照してください  
