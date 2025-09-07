@@ -7,5 +7,6 @@
   </node>
   <node pkg="teleop_twist_joy" exec="teleop_node" name="rccar_teleop_joy_node" output="both">
     <param from="$(find-pkg-share rccar_teleop_joy)/config/rccar.config.yaml"/>
+    <remap from="cmd_vel" to="cmd_vel_joy"/>
   </node>
 </launch>
