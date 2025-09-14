@@ -124,9 +124,22 @@ def generate_launch_description():
         condition = IfCondition( use_lidar )
     )
 
+    included_imu_launch = IncludeLaunchDescription(
+        XMLLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory( 'rccar_bringup' ),
+                'launch',
+                'rccar-imu.launch.xml'
+            )
+        ),
+        launch_arguments={
+            'use_sim_time': use_sim_time,
+        }.items()
+    )
+
     delayed_launch = TimerAction(
         period = 20.0,
-        actions=[included_gnss_launch, included_camera_launch, included_lidar_launch]
+        actions=[included_gnss_launch, included_camera_launch, included_lidar_launch, included_imu_launch]
     )
 
     return LaunchDescription([
@@ -142,4 +155,5 @@ def generate_launch_description():
         # included_gnss_launch,
         # included_camera_launch,
         # included_lidar_launch,
+        # included_imu_launch,
     ])

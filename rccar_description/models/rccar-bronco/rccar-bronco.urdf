@@ -268,6 +268,19 @@
   <xacro:VLP-16 parent="lidar_link" name="velodyne" topic="/velodyne_points" organize_cloud="false" hz="10" samples="440" gpu="false">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:VLP-16> -->
+  <gazebo reference="imu_link">
+    <gravity>true</gravity>
+    <sensor name="bno055_imu" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="bno055_imu_plugin">
+        <frame_name>imu_link</frame_name>
+        <ros>
+          <remapping>~/out:=/bno055/imu_raw</remapping>
+        </ros>
+      </plugin>
+    </sensor>
+  </gazebo>
   <link name="base_link">
     <visual>
       <origin rpy="0 0 0" xyz="0.0 0.0 0.145"/>
@@ -487,6 +500,12 @@
       </plugin>
     </sensor>
   </gazebo>
+  <link name="imu_link"/>
+  <joint name="base_link_to_imu_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin rpy="0 0 0" xyz="-0.15 0.0 0.17"/>
+  </joint>
   <link name="front_left_mount">
     <visual>
       <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>

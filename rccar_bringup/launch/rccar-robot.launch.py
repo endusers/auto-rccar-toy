@@ -48,7 +48,7 @@ def generate_launch_description():
 
     declare_use_multi_imu_cmd = DeclareLaunchArgument(
         'use_multi_imu',
-        default_value='true',
+        default_value='false',
         description='Use multi imu if true'
     )
 
@@ -76,16 +76,6 @@ def generate_launch_description():
                 get_package_share_directory( 'rccar_bringup' ),
                 'launch',
                 'rccar-micro-ros-agent.launch.py'
-            )
-        ),
-    )
-
-    included_bno055_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(
-                get_package_share_directory( 'rccar_bringup' ),
-                'launch',
-                'rccar-bno055.launch.py'
             )
         ),
     )
@@ -126,6 +116,16 @@ def generate_launch_description():
         condition = IfCondition( use_lidar )
     )
 
+    included_imu_launch = IncludeLaunchDescription(
+        XMLLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory( 'rccar_bringup' ),
+                'launch',
+                'rccar-imu.launch.xml'
+            )
+        ),
+    )
+
     included_multi_imu_launch = IncludeLaunchDescription(
         XMLLaunchDescriptionSource(
             os.path.join(
@@ -152,9 +152,10 @@ def generate_launch_description():
         actions=[included_lidar_launch]
     )
 
-    delayed_multi_imu_launch = TimerAction(
+    delayed_imu_launch = TimerAction(
         period = 30.0,
-        actions=[included_multi_imu_launch]
+        # actions=[included_multi_imu_launch]
+        actions=[included_imu_launch, included_multi_imu_launch]
     )
 
     return LaunchDescription([
@@ -166,13 +167,13 @@ def generate_launch_description():
         declare_model_file_cmd,
         included_robot_state_launch,
         included_micro_ros_launch,
-        # included_bno055_launch,
         delayed_gnss_launch,
         delayed_camera_launch,
         delayed_lidar_launch,
-        delayed_multi_imu_launch,
+        delayed_imu_launch,
         # included_gnss_launch,
         # included_camera_launch,
         # included_lidar_launch,
+        # included_imu_launch,
         # included_multi_imu_launch,
     ])

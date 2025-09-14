@@ -179,6 +179,18 @@
         <pose>0.151 0 0.152 0 -0 0</pose>
       </sensor>
       <gravity>1</gravity>
+      <sensor name='bno055_imu' type='imu'>
+        <always_on>1</always_on>
+        <update_rate>100</update_rate>
+        <plugin name='bno055_imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+          <frame_name>imu_link</frame_name>
+          <ros>
+            <remapping>~/out:=/bno055/imu_raw</remapping>
+          </ros>
+        </plugin>
+        <pose>-0.15 0 0.17 0 -0 0</pose>
+      </sensor>
+      <gravity>1</gravity>
       <sensor name='lidar_imu' type='imu'>
         <always_on>1</always_on>
         <update_rate>200</update_rate>
