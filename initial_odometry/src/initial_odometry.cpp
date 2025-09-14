@@ -4,10 +4,10 @@
  * @brief       initial_odometry
  * @note        なし
  * 
- * @version     1.0.0
- * @date        2023/03/26
+ * @version     1.2.0
+ * @date        2025/06/15
  * 
- * @copyright   (C) 2023 Motoyuki Endo
+ * @copyright   (C) 2023-2025 Motoyuki Endo
  */
 #include "initial_odometry/initial_odometry.hpp"
 
@@ -29,6 +29,8 @@ InitialOdometry::InitialOdometry()
 
 	std::vector<double> default_pose = { 0.0, 0.0, 0.0 };
 	initialPose_ = this->declare_parameter( "initial_pose", default_pose );
+	frame_id_ = this->declare_parameter<std::string>( "frame_id", "map" );
+	child_frame_id_ = this->declare_parameter<std::string>( "child_frame_id", "odom" );
 
 	parameterSubscription_ = this->create_subscription<rcl_interfaces::msg::ParameterEvent>(
 		"/parameter_events", 10, std::bind( &InitialOdometry::UpdateParameters, this, _1 ) );
@@ -82,8 +84,8 @@ void InitialOdometry::PublishInitialOdom(void)
 	}
 
 	odom.header.stamp = rosclock_.now();
-	odom.header.frame_id = "map";
-	odom.child_frame_id = "odom";
+	odom.header.frame_id = frame_id_;
+	odom.child_frame_id = child_frame_id_;
 
 	odom.pose.pose.position.x = initial_pose_x;
 	odom.pose.pose.position.y = initial_pose_y;
@@ -109,5 +111,7 @@ void InitialOdometry::UpdateParameters( const rcl_interfaces::msg::ParameterEven
 	if( event->node == this->get_fully_qualified_name() )
 	{
 		this->get_parameter( "initial_pose", initialPose_ );
+		this->get_parameter( "frame_id", frame_id_ );
+		this->get_parameter( "child_frame_id", child_frame_id_ );
 	}
 }

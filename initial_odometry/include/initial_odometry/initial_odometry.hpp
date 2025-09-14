@@ -4,10 +4,10 @@
  * @brief       initial_odometry
  * @note        なし
  * 
- * @version     1.1.0
- * @date        2024/01/05
+ * @version     1.2.0
+ * @date        2025/06/15
  * 
- * @copyright   (C) 2023-2024 Motoyuki Endo
+ * @copyright   (C) 2023-2025 Motoyuki Endo
  */
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -24,6 +24,8 @@ class InitialOdometry : public rclcpp::Node
 		rclcpp::Time timeInvalid_;
 
 		std::vector<double> initialPose_;
+		std::string frame_id_;
+		std::string child_frame_id_;
 
 		rclcpp::TimerBase::SharedPtr timer_;
 
