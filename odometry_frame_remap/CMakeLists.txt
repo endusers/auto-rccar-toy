@@ -11,7 +11,9 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 
@@ -21,7 +23,7 @@ add_executable(odometry_frame_remap
   src/odometry_frame_remap_main.cpp
   src/odometry_frame_remap.cpp
 )
-ament_target_dependencies(odometry_frame_remap rclcpp tf2_ros std_msgs nav_msgs)
+ament_target_dependencies(odometry_frame_remap rclcpp tf2 tf2_ros tf2_geometry_msgs std_msgs nav_msgs)
 
 install(TARGETS
   odometry_frame_remap
