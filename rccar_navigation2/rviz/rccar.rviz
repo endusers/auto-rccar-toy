@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /TF1/Frames1
         - /AerialMap1/Topic1
         - /Map1/Topic1
         - /CameraPoints1/Topic1
@@ -58,125 +57,15 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_link:
-          Value: true
-        body:
-          Value: false
-        camera_accel_frame:
-          Value: false
-        camera_accel_optical_frame:
-          Value: false
-        camera_bottom_screw_frame:
-          Value: false
-        camera_color_frame:
-          Value: false
-        camera_color_optical_frame:
-          Value: false
-        camera_depth_frame:
-          Value: false
-        camera_depth_optical_frame:
-          Value: false
-        camera_gyro_frame:
-          Value: false
-        camera_gyro_optical_frame:
-          Value: false
-        camera_imu_optical_frame:
-          Value: false
-        camera_infra1_frame:
-          Value: false
-        camera_infra1_optical_frame:
-          Value: false
-        camera_infra2_frame:
-          Value: false
-        camera_infra2_optical_frame:
-          Value: false
-        camera_init:
-          Value: false
-        camera_link:
-          Value: false
-        front_left_mount:
-          Value: false
-        front_left_wheel:
-          Value: false
-        front_right_mount:
-          Value: false
-        front_right_wheel:
-          Value: false
-        gps_link:
-          Value: false
-        lidar_link:
-          Value: false
-        livox_frame:
-          Value: false
-        map:
-          Value: true
-        odom:
-          Value: true
-        pcl_pose:
-          Value: false
-        rear_left_mount:
-          Value: false
-        rear_left_wheel:
-          Value: false
-        rear_right_mount:
-          Value: false
-        rear_right_wheel:
-          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
-            base_link:
-              camera_bottom_screw_frame:
-                camera_link:
-                  camera_accel_frame:
-                    camera_accel_optical_frame:
-                      {}
-                  camera_color_frame:
-                    camera_color_optical_frame:
-                      {}
-                  camera_depth_frame:
-                    camera_depth_optical_frame:
-                      {}
-                  camera_gyro_frame:
-                    camera_gyro_optical_frame:
-                      camera_imu_optical_frame:
-                        {}
-                  camera_infra1_frame:
-                    camera_infra1_optical_frame:
-                      {}
-                  camera_infra2_frame:
-                    camera_infra2_optical_frame:
-                      {}
-              front_left_mount:
-                {}
-              front_left_wheel:
-                {}
-              front_right_mount:
-                {}
-              front_right_wheel:
-                {}
-              gps_link:
-                {}
-              lidar_link:
-                livox_frame:
-                  {}
-              rear_left_mount:
-                {}
-              rear_left_wheel:
-                {}
-              rear_right_mount:
-                {}
-              rear_right_wheel:
-                {}
-          pcl_pose:
-            {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz_default_plugins/RobotModel
       Collision Enabled: false
@@ -286,6 +175,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         lidar_link:
           Alpha: 1
           Show Axes: false
@@ -337,8 +230,8 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Best Effort
-        Value: /gnss/fix
-      Value: false
+        Value: /gnss/fix_raw
+      Value: true
       Zoom: 16
     - Alpha: 0.699999988079071
       Class: rviz_default_plugins/Map
@@ -361,6 +254,34 @@ Visualization Manager:
         Value: /map_updates
       Use Timestamp: false
       Value: true
+    - Class: rviz_2d_overlay_plugins/PieChartOverlay
+      Enabled: true
+      Name: GnssFixStatus
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /gnss/fix_raw_status
+      Value: true
+      auto color change: false
+      background color: 0; 0; 0
+      backround alpha: 0
+      clockwise rotate direction: false
+      foreground alpha: 0.699999988079071
+      foreground alpha 2: 0.4000000059604645
+      foreground color: 255; 255; 0
+      left: 64
+      max color: 255; 0; 0
+      max color change threthold: 0
+      max value: 2
+      med color: 255; 0; 0
+      med color change threthold: 0
+      min value: -1
+      show caption: true
+      size: 128
+      text size: 12
+      top: 64
     - Angle Tolerance: 0.10000000149011612
       Class: rviz_default_plugins/Odometry
       Covariance:
@@ -399,7 +320,7 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /odometry/global
-      Value: false
+      Value: true
     - Angle Tolerance: 0.10000000149011612
       Class: rviz_default_plugins/Odometry
       Covariance:
@@ -428,7 +349,7 @@ Visualization Manager:
         Color: 255; 255; 0
         Head Length: 0.30000001192092896
         Head Radius: 0.10000000149011612
-        Shaft Length: 0.8
+        Shaft Length: 0.800000011920929
         Shaft Radius: 0.05000000074505806
         Value: Arrow
       Topic:
@@ -438,7 +359,7 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /odometry/local
-      Value: false
+      Value: true
     - Alpha: 0.699999988079071
       Class: rviz_default_plugins/Map
       Color Scheme: costmap
