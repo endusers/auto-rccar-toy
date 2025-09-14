@@ -3,7 +3,7 @@
 
 # The MIT License
 
-# Copyright (c) 2023-2024 Motoyuki Endo
+# Copyright (c) 2023-2025 Motoyuki Endo
 # Released under the MIT license
 # http://opensource.org/licenses/mit-license.php
 
@@ -53,14 +53,17 @@ class RoutePublisher(Node):
         self.odom : nav_msgs.msg.Odometry = None
         self.utm_frame : string = ''
         self.map_frame : string = ''
+        self.pose_frame : string = ''
         self.reach_range : float = 0.5
 
         self.declare_parameter( 'utm_frame', 'utm' )
         self.declare_parameter( 'map_frame', 'map' )
+        self.declare_parameter( 'pose_frame', 'map' )
         self.declare_parameter( 'reach_range', 0.5 )
 
         self.utm_frame = self.get_parameter( "utm_frame" ).value
         self.map_frame = self.get_parameter( "map_frame" ).value
+        self.pose_frame = self.get_parameter( "pose_frame" ).value
         self.reach_range = self.get_parameter( "reach_range" ).value
 
         self.tf_buffer : tf2_ros.Buffer = tf2_ros.Buffer()
@@ -243,11 +246,11 @@ class RoutePublisher(Node):
 
                 self.path = nav_msgs.msg.Path()
                 self.path.header.stamp = self.get_clock().now().to_msg()
-                self.path.header.frame_id = self.map_frame
+                self.path.header.frame_id = self.pose_frame
                 self.path.poses = self.poses.copy()
                 for pose in self.path.poses:
                     pose.header.stamp = self.path.header.stamp
-                    pose.header.frame_id = self.map_frame
+                    pose.header.frame_id = self.pose_frame
 
                 self.pubRoute.publish( self.path )
 
