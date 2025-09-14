@@ -54,6 +54,7 @@ def generate_launch_description():
                 'new_frame_id' : 'odom',
                 'new_child_frame_id' : 'base_link',
                 'publish_tf' : False,
+                'enable_transform' : False,
             }
         ],
         remappings=[

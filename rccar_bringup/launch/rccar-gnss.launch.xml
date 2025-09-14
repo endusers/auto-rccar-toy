@@ -12,13 +12,24 @@
     <node pkg="tf2_ros" exec="static_transform_publisher" name="odom_to_base_link" args="0 0 0 0 0 0 odom base_link">
       <param name="use_sim_time" value="$(var use_sim_time)"/>
     </node>
-
-    <node pkg="initial_odometry" exec="initial_odometry" name="initial_odometry_node" output="both">
-      <param from="$(find-pkg-share rccar_bringup)/config/rccar_initial_odom.yaml"/>
-      <param name="use_sim_time" value="$(var use_sim_time)"/>
-      <remap from="odometry/initial" to="odometry/local"/>
-    </node>
   </group>
+
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="base_link_to_gnss_init" args="0 0 0 0 0 0 base_link gnss_init">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="gnss_init_to_gnss_anchor" args="0 0 0 0 0 0 gnss_init gnss_anchor">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
+  <node pkg="initial_odometry" exec="initial_odometry" name="initial_odometry_node" output="both">
+    <param from="$(find-pkg-share rccar_bringup)/config/rccar_initial_odom.yaml"/>
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="frame_id" value="gnss_init"/>
+    <param name="child_frame_id" value="gnss_anchor"/>
+    <remap from="odometry/initial" to="odometry/initial"/>
+    <remap from="odometry/gps" to="odometry/gps"/>
+  </node>
 
   <node pkg="navsatfix_conditional_relay" exec="navsatfix_conditional_relay" name="navsatfix_conditional_relay_node" output="both">
     <param name="use_sim_time" value="$(var use_sim_time)"/>
@@ -27,6 +38,10 @@
     <param name="override_status" value="2"/>
     <remap from="gnss/in" to="gnss/fix_raw"/>
     <remap from="gnss/out" to="gnss/fix"/>
+  </node>
+
+  <node pkg="topic_tools" exec="relay_field" name="relay_navsat_status" output="both"
+    args='/gnss/fix_raw /gnss/fix_raw_status std_msgs/msg/Float32 "{""data"": m.status.status}"'>
   </node>
 </launch>
 

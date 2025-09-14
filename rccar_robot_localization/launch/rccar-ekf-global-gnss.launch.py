@@ -33,11 +33,32 @@ def generate_launch_description():
                     'new_frame_id' : 'map',
                     'new_child_frame_id' : '',
                     'publish_tf' : False,
+                    'enable_transform' : False,
                 }
             ],
             remappings=[
                 ('/odom/in','/odometry/gps_raw'),
                 ('/odom/out','/odometry/gps'),
+            ],
+            output='both',
+        ),
+
+        Node(
+            package='odometry_frame_remap',
+            executable='odometry_frame_remap',
+            name='odometry_gps_frame_remap_node',
+            parameters=[
+                {
+                    'use_sim_time' : use_sim_time,
+                    'new_frame_id' : 'map',
+                    'new_child_frame_id' : '',
+                    'publish_tf' : False,
+                    'enable_transform' : True,
+                }
+            ],
+            remappings=[
+                ('/odom/in','/odometry/local'),
+                ('/odom/out','/odometry/local_in_map'),
             ],
             output='both',
         ),
