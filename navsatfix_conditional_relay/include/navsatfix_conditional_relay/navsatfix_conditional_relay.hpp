@@ -4,8 +4,8 @@
  * @brief       navsatfix_conditional_relay
  * @note        なし
  * 
- * @version     1.0.0
- * @date        2025/08/30
+ * @version     1.1.0
+ * @date        2025/09/21
  * 
  * @copyright   (C) 2025 Motoyuki Endo
  */
@@ -21,7 +21,8 @@ class NavSatFixConditionalRelay : public rclcpp::Node
 		~NavSatFixConditionalRelay();
 
 	private:
-		int8_t relay_threshold_;
+		int8_t relay_status_threshold_;
+		double_t relay_sigma_threshold_;
 		bool enable_status_override_;
 		int8_t override_status_;
 
