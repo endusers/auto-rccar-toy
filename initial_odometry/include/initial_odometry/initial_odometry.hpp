@@ -22,7 +22,6 @@ class InitialOdometry : public rclcpp::Node
 
 		bool isValid_;
 
-		rclcpp::Clock rosclock_;
 		rclcpp::Time timeInvalid_;
 
 		std::string frame_id_;

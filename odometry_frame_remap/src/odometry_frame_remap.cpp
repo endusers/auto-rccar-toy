@@ -4,8 +4,8 @@
  * @brief       odometry_frame_remap
  * @note        なし
  * 
- * @version     1.1.0
- * @date        2025/06/15
+ * @version     1.1.1
+ * @date        2025/09/21
  * 
  * @copyright   (C) 2025 Motoyuki Endo
  */
@@ -15,8 +15,7 @@ using namespace std::chrono_literals;
 using namespace std::placeholders;
 
 OdometryFrameRemap::OdometryFrameRemap()
-	: Node( "odometry_frame_remap" ),
-	rosclock_( RCL_ROS_TIME )
+	: Node( "odometry_frame_remap" )
 {
 	new_frame_id_ = this->declare_parameter<std::string>( "new_frame_id", "odom" );
 	new_child_frame_id_ = this->declare_parameter<std::string>( "new_child_frame_id", "base_link" );
@@ -57,7 +56,7 @@ void OdometryFrameRemap::OdometryCallback( const nav_msgs::msg::Odometry::Shared
 {
 	auto odom = *msg;
 
-	// odom.header.stamp = rosclock_.now();
+	// odom.header.stamp = this->get_clock()->now();
 	odom.header.frame_id = new_frame_id_;
 	odom.child_frame_id = new_child_frame_id_;
 
@@ -103,7 +102,7 @@ void OdometryFrameRemap::OdometryCallback( const nav_msgs::msg::Odometry::Shared
 
 		odom_tf.header.frame_id = new_frame_id_;
 		odom_tf.child_frame_id = new_child_frame_id_;
-		odom_tf.header.stamp = rosclock_.now();
+		odom_tf.header.stamp = this->get_clock()->now();
 
 		tf_broadcaster_->sendTransform( odom_tf );
 	}

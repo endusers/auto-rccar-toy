@@ -4,8 +4,8 @@
  * @brief       odometry_frame_remap
  * @note        なし
  * 
- * @version     1.1.0
- * @date        2025/06/15
+ * @version     1.1.1
+ * @date        2025/09/21
  * 
  * @copyright   (C) 2025 Motoyuki Endo
  */
@@ -19,8 +19,6 @@
 class OdometryFrameRemap : public rclcpp::Node
 {
 	private:
-		rclcpp::Clock rosclock_;
-
 		std::string new_frame_id_;
 		std::string new_child_frame_id_;
 		bool publish_tf_;

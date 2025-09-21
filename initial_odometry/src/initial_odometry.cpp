@@ -20,12 +20,11 @@ using namespace std::placeholders;
 const rclcpp::Duration InitialOdometry::INVALID_TIME = rclcpp::Duration( 10s );
 
 InitialOdometry::InitialOdometry()
-	: Node( "initial_odometry" ),
-	rosclock_( RCL_ROS_TIME )
+	: Node( "initial_odometry" )
 {
 	isValid_ = false;
 
-	timeInvalid_ = rosclock_.now();
+	timeInvalid_ = this->get_clock()->now();
 
 	std::vector<double> default_pose = { 0.0, 0.0, 0.0 };
 
@@ -71,7 +70,7 @@ void InitialOdometry::MainCycle( void )
 		PublishInitialOdom();
 	}
 
-	if( rosclock_.now() > timeInvalid_ ){
+	if( this->get_clock()->now() > timeInvalid_ ){
 		isValid_ = false;
 	}
 }
@@ -94,7 +93,7 @@ void InitialOdometry::PublishInitialOdom( void )
 		initial_pose_a = initial_pose_[2] * ( M_PI / 180 );
 	}
 
-	odom.header.stamp = rosclock_.now();
+	odom.header.stamp = this->get_clock()->now();
 	odom.header.frame_id = frame_id_;
 	odom.child_frame_id = child_frame_id_;
 
@@ -117,7 +116,7 @@ void InitialOdometry::PublishInitialOdom( void )
 
 		tf_msg.header.frame_id = frame_id_;
 		tf_msg.child_frame_id = child_frame_id_;
-		tf_msg.header.stamp = rosclock_.now();
+		tf_msg.header.stamp = this->get_clock()->now();
 
 		static_tf_br_->sendTransform( tf_msg );
 	}
@@ -148,7 +147,7 @@ void InitialOdometry::PublishParentStaticTf( void )
 
 	geometry_msgs::msg::TransformStamped tf_msg;
 
-	tf_msg.header.stamp = rosclock_.now();;
+	tf_msg.header.stamp = this->get_clock()->now();
 	tf_msg.header.frame_id = parent_frame_;
 	tf_msg.child_frame_id = frame_id_;
 
@@ -167,7 +166,7 @@ void InitialOdometry::SubscribeGpsOdom( const nav_msgs::msg::Odometry::SharedPtr
 {
 	UNUSED_VARIABLE( msg );
 
-	timeInvalid_ = rosclock_.now() + INVALID_TIME;
+	timeInvalid_ = this->get_clock()->now() + INVALID_TIME;
 	isValid_ = true;
 }
 
