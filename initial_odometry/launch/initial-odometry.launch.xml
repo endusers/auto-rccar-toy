@@ -4,10 +4,14 @@
   <arg name="use_sim_time" default="false"/>
 
   <node pkg="initial_odometry" exec="initial_odometry" name="initial_odometry_node" output="both">
-    <param from="$(find-pkg-share initial_odometry)/config/initial_odom.yaml"/>
     <param name="use_sim_time" value="$(var use_sim_time)"/>
     <param name="frame_id" value="map"/>
     <param name="child_frame_id" value="odom"/>
+    <param name="initial_pose" value="[0.0, 0.0, 0.0]"/>
+    <param name="publish_tf" value="false"/>
+    <param name="enable_parent_frame" value="false"/>
+    <param name="parent_frame" value="base_link"/>
+    <param name="parent_initial_pose" value="[0.0, 0.0, 0.0]"/>
     <remap from="odometry/initial" to="odometry/initial"/>
     <remap from="odometry/gps" to="odometry/gps"/>
   </node>

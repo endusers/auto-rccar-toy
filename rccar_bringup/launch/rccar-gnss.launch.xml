@@ -14,19 +14,15 @@
     </node>
   </group>
 
-  <node pkg="tf2_ros" exec="static_transform_publisher" name="base_link_to_gnss_init" args="0 0 0 0 0 0 base_link gnss_init">
-    <param name="use_sim_time" value="$(var use_sim_time)"/>
-  </node>
-
-  <node pkg="tf2_ros" exec="static_transform_publisher" name="gnss_init_to_gnss_anchor" args="0 0 0 0 0 0 gnss_init gnss_anchor">
-    <param name="use_sim_time" value="$(var use_sim_time)"/>
-  </node>
-
   <node pkg="initial_odometry" exec="initial_odometry" name="initial_odometry_node" output="both">
-    <param from="$(find-pkg-share rccar_bringup)/config/rccar_initial_odom.yaml"/>
     <param name="use_sim_time" value="$(var use_sim_time)"/>
     <param name="frame_id" value="gnss_init"/>
     <param name="child_frame_id" value="gnss_anchor"/>
+    <param name="initial_pose" value="[0.0, 0.0, 0.0]"/>
+    <param name="publish_tf" value="true"/>
+    <param name="enable_parent_frame" value="true"/>
+    <param name="parent_frame" value="base_link"/>
+    <param name="parent_initial_pose" value="[0.0, 0.0, 0.0]"/>
     <remap from="odometry/initial" to="odometry/initial"/>
     <remap from="odometry/gps" to="odometry/gps"/>
   </node>
@@ -49,3 +45,4 @@
 <!-- Memo -->
 <!-- ros2 param set /navsatfix_conditional_relay_node relay_threshold 0 -->
 <!-- ros2 param set /navsatfix_conditional_relay_node override_status 1 -->
+<!-- ros2 param set /initial_odometry_node parent_initial_pose "[0.0, 0.0, 0.0]" -->
