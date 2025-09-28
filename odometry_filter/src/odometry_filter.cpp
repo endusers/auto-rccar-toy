@@ -22,9 +22,15 @@ OdometryFilter::OdometryFilter()
 	map_frame_ = this->declare_parameter<std::string>( "map_frame", "map" );
 	odom_frame_ = this->declare_parameter<std::string>( "odom_frame", "odom" );
 	base_link_frame_ = this->declare_parameter<std::string>( "base_link_frame", "base_link" );
+	twist_publish_rate_ = this->declare_parameter<double_t>( "twist_publish_rate", 1.0 );
 	initial_pose_ = this->declare_parameter( "initial_pose", default_pose );
 	update_yaw_only_ = this->declare_parameter<bool>( "update_yaw_only", false );
 	publish_tf_ = this->declare_parameter<bool>( "publish_tf", false );
+
+	tim_twist_publish_ = this->get_clock()->now() + rclcpp::Duration::from_seconds( 1.0 / twist_publish_rate_ );
+	odom_ = nav_msgs::msg::Odometry();
+	odom_.pose.pose.orientation.w = 1.0;
+	lst_odom_ = {};
 
 	SetOffsetTransform();
 
@@ -36,16 +42,88 @@ OdometryFilter::OdometryFilter()
 	subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
 		"odom/in", 10, std::bind( &OdometryFilter::OdometryCallback, this, _1 ) );
 
-	publisher_ = this->create_publisher<nav_msgs::msg::Odometry>( "odom/out", 10 );
+	pub_odom_ = this->create_publisher<nav_msgs::msg::Odometry>( "odom/out", 10 );
+	pub_twist_ = this->create_publisher<nav_msgs::msg::Odometry>( "odom/out_twist_resampler", 10 );
 
 	tf_buffer_ = std::make_unique<tf2_ros::Buffer>( this->get_clock() );
 	tf_listener_ = std::make_unique<tf2_ros::TransformListener>( *tf_buffer_ );
 	tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>( this );
+
+	timer_ = this->create_wall_timer( 10ms, std::bind( &OdometryFilter::MainCycle, this ) );
 }
 
 OdometryFilter::~OdometryFilter()
 {
 	// TODO
+}
+
+void OdometryFilter::MainCycle( void )
+{
+	auto odom = odom_;
+
+	if( this->get_clock()->now() >= tim_twist_publish_ )
+	{
+		tim_twist_publish_ = this->get_clock()->now() + rclcpp::Duration::from_seconds( 1.0 / twist_publish_rate_ );
+
+		if( lst_odom_.size() > 0 )
+		{
+			nav_msgs::msg::Odometry &prev = lst_odom_.back();
+
+			double_t dt = ( rclcpp::Time(odom.header.stamp) - rclcpp::Time(prev.header.stamp) ).seconds();
+
+			tf2::Transform t_previous;
+			tf2::fromMsg( prev.pose.pose, t_previous );
+
+			tf2::Transform t_current;
+			tf2::fromMsg( odom.pose.pose, t_current );
+
+			tf2::Transform t_relative = t_previous.inverse() * t_current;
+
+			double_t dx = t_relative.getOrigin().x();
+			double_t dy = t_relative.getOrigin().y();
+			double_t dz = t_relative.getOrigin().z();
+
+			tf2::Quaternion q_previous;
+			tf2::fromMsg( prev.pose.pose.orientation, q_previous );
+
+			tf2::Quaternion q_current;
+			tf2::fromMsg( odom.pose.pose.orientation, q_current );
+
+			tf2::Quaternion q_relative = q_previous.inverse() * q_current;
+
+			double_t axis_x = q_relative.getAxis().x();
+			double_t axis_y = q_relative.getAxis().y();
+			double_t axis_z = q_relative.getAxis().z();
+
+			double_t angle = q_relative.getAngle();
+
+			double_t vx = dx / dt;
+			double_t vy = dy / dt;
+			double_t vz = dz / dt;
+
+			double_t wx = axis_x * angle / dt;
+			double_t wy = axis_y * angle / dt;
+			double_t wz = axis_z * angle / dt;
+
+
+			odom.header.stamp = this->get_clock()->now();
+
+			odom.twist.twist.linear.x = vx;
+			odom.twist.twist.linear.y = vy;
+			odom.twist.twist.linear.z = vz;
+			odom.twist.twist.angular.x = wx;
+			odom.twist.twist.angular.y = wy;
+			odom.twist.twist.angular.z = wz;
+		}
+
+		pub_twist_->publish( odom );
+
+		if( lst_odom_.size() >= 3 )
+		{
+			lst_odom_.pop_front();
+		}
+		lst_odom_.push_back( odom );
+	}
 }
 
 void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr msg )
@@ -98,7 +176,9 @@ void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr 
 		tf_broadcaster_->sendTransform( tf_msg );
 	}
 
-	publisher_->publish( odom );
+	pub_odom_->publish( odom );
+
+	odom_ = odom;
 }
 
 void OdometryFilter::SetOffsetTransform( void )
@@ -174,6 +254,7 @@ void OdometryFilter::UpdateParameters( const rcl_interfaces::msg::ParameterEvent
 		this->get_parameter( "map_frame", map_frame_ );
 		this->get_parameter( "odom_frame", odom_frame_ );
 		this->get_parameter( "base_link_frame", base_link_frame_ );
+		this->get_parameter( "twist_publish_rate", twist_publish_rate_ );
 		this->get_parameter( "initial_pose", initial_pose_ );
 		this->get_parameter( "update_yaw_only", update_yaw_only_ );
 		this->get_parameter( "publish_tf", publish_tf_ );

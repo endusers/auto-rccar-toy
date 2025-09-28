@@ -85,6 +85,7 @@ def generate_launch_description():
                     'map_frame' : 'map',
                     'odom_frame' : 'odom',
                     'base_link_frame' : 'base_link',
+                    'twist_publish_rate' : 1.0,
                     'initial_pose' : [0.0, 0.0, 0.0],
                     'update_yaw_only' : True,
                     'publish_tf' : True,
@@ -93,6 +94,7 @@ def generate_launch_description():
             remappings=[
                 ('/odom/in','/odometry/global_raw'),
                 ('/odom/out','/odometry/global'),
+                ('/odom/out_twist_resampler','/odometry/global_twist_resampler'),
                 ('/initialpose','/initialpose'),
             ],
             output='both',
