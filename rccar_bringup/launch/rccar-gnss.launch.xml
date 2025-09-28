@@ -33,6 +33,11 @@
     <param name="relay_sigma_threshold" value="0.03"/>
     <param name="enable_status_override" value="$(var use_sim_time)"/>
     <param name="override_status" value="2"/>
+    <param name="enable_covariance_override" value="false"/>
+    <param name="override_covariance_sigma_threshold" value="0.03"/>
+    <param name="override_covariance_east" value="1e6"/>
+    <param name="override_covariance_north" value="1e6"/>
+    <param name="override_covariance_up" value="1e6"/>
     <remap from="gnss/in" to="gnss/fix_raw"/>
     <remap from="gnss/out" to="gnss/fix"/>
   </node>
