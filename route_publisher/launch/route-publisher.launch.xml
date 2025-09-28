@@ -8,6 +8,8 @@
     <param name="utm_frame" value="utm"/>
     <param name="map_frame" value="gnss_init"/>
     <param name="pose_frame" value="map"/>
-    <param name="reach_range" value="1.0"/>
+    <param name="reach_range_to_pose" value="1.0"/>
+    <param name="reach_range_through_poses" value="10.0"/>
+    <param name="max_route_distance" value="30.0"/>
   </node>
 </launch>

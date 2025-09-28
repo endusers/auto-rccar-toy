@@ -54,17 +54,23 @@ class RoutePublisher(Node):
         self.utm_frame : string = ''
         self.map_frame : string = ''
         self.pose_frame : string = ''
-        self.reach_range : float = 0.5
+        self.reach_range_to_pose : float = 1.0
+        self.reach_range_through_poses : float = 10.0
+        self.max_route_distance : float = 30.0
 
         self.declare_parameter( 'utm_frame', 'utm' )
         self.declare_parameter( 'map_frame', 'map' )
         self.declare_parameter( 'pose_frame', 'map' )
-        self.declare_parameter( 'reach_range', 0.5 )
+        self.declare_parameter( 'reach_range_to_pose', 1.0 )
+        self.declare_parameter( 'reach_range_through_poses', 10.0 )
+        self.declare_parameter( 'max_route_distance', 30.0 )
 
         self.utm_frame = self.get_parameter( "utm_frame" ).value
         self.map_frame = self.get_parameter( "map_frame" ).value
         self.pose_frame = self.get_parameter( "pose_frame" ).value
-        self.reach_range = self.get_parameter( "reach_range" ).value
+        self.reach_range_to_pose = self.get_parameter( "reach_range_to_pose" ).value
+        self.reach_range_through_poses = self.get_parameter( "reach_range_through_poses" ).value
+        self.max_route_distance = self.get_parameter( "max_route_distance" ).value
 
         self.tf_buffer : tf2_ros.Buffer = tf2_ros.Buffer()
         self.tf_listener : tf2_ros.TransformListener = tf2_ros.TransformListener( self.tf_buffer, self )
@@ -82,7 +88,7 @@ class RoutePublisher(Node):
         self.index : int = 0
         self.isGoalAccepted : bool = False
         self.isValidDistanceRemaining : bool = False
-        self.modeNavi : int = RADIO_ID_TO_POSE
+        self.modeNavi : int = RADIO_ID_THROUGH_POSES
 
         self.timLabelStatusUpdate : rclpy.time.Time = self.get_clock().now() + rclpy.duration.Duration(seconds=1.0)
 
@@ -129,7 +135,7 @@ class RoutePublisher(Node):
         rdoThroughPoses.move( 180, 70 )
         self.radioNaviMode.addButton( rdoThroughPoses, RADIO_ID_THROUGH_POSES ) 
 
-        rdoToPose.setChecked( True )
+        rdoThroughPoses.setChecked( True )
 
         self.lblStatus = QLabel( self.widget )
         self.lblStatus.setText( '' )
@@ -242,7 +248,7 @@ class RoutePublisher(Node):
                 #    posestamp = tf2_geometry_msgs.do_transform_pose( utm, transform )
                 #    self.poses.append( posestamp )
 
-                self.cutRoute()
+                self.poses = self.cutRouteBefore()
 
                 self.path = nav_msgs.msg.Path()
                 self.path.header.stamp = self.get_clock().now().to_msg()
@@ -264,17 +270,16 @@ class RoutePublisher(Node):
 
                 self.navi_handle = None
                 self.modeNavi = self.radioNaviMode.checkedId()
+                self.isGoalAccepted = False
+                self.isValidDistanceRemaining = False
                 if self.modeNavi == RADIO_ID_TO_POSE:
                     self.index = 0
-                    if distance < self.reach_range:
+                    if distance < self.reach_range_to_pose:
                         self.index = self.index + 1
-                    self.isGoalAccepted = False
-                    self.isValidDistanceRemaining = False
                     self.sendGoalPose( self.path.poses[self.index] )
                 else:
-                    # if distance < self.reach_range:
-                    #     del self.path.poses[:1]
-                    self.sendGoalPoses( self.path.poses )
+                    poses = self.cutRouteAfter()
+                    self.sendGoalPoses( poses )
 
             except tf2_ros.LookupException as e:
                 self.get_logger().error( f'Failed to get transform {repr(e)}\n' )
@@ -286,7 +291,9 @@ class RoutePublisher(Node):
         if self.navi_handle is not None:
             self.navi_handle.cancel_goal_async()
 
-    def cutRoute( self ):
+    def cutRouteBefore( self ) -> list[geometry_msgs.msg.PoseStamped]:
+        wps = self.poses.copy()
+
         pose : geometry_msgs.msg.Pose = self.odom.pose.pose
         now_x : float = pose.position.x
         now_y : float = pose.position.y
@@ -296,11 +303,11 @@ class RoutePublisher(Node):
         nearest_distance : float = sys.float_info.max
 
         i = 0
-        while i < len(self.poses) - 1:
-            wp_x = self.poses[i].pose.position.x
-            wp_y = self.poses[i].pose.position.y
-            wp_next_x = self.poses[i+1].pose.position.x
-            wp_next_y = self.poses[i+1].pose.position.y
+        while i < len(wps) - 1:
+            wp_x = wps[i].pose.position.x
+            wp_y = wps[i].pose.position.y
+            wp_next_x = wps[i+1].pose.position.x
+            wp_next_y = wps[i+1].pose.position.y
 
             point = Point( now_x, now_y )
             line = LineString([(wp_x, wp_y), (wp_next_x, wp_next_y)])
@@ -316,12 +323,12 @@ class RoutePublisher(Node):
 
             i = i + 1
 
-        dx = self.poses[wp_index + 1].pose.position.x - nearest_point.x
-        dy = self.poses[wp_index + 1].pose.position.y - nearest_point.y
+        dx = wps[wp_index + 1].pose.position.x - nearest_point.x
+        dy = wps[wp_index + 1].pose.position.y - nearest_point.y
         theta = math.atan2(dy, dx)
         q = PyKDL.Rotation.RPY( 0.0, 0.0, theta ).GetQuaternion()
 
-        del self.poses[:(wp_index + 1)]
+        del wps[:(wp_index + 1)]
 
         posestamp = geometry_msgs.msg.PoseStamped()
         posestamp.pose.position.x = nearest_point.x
@@ -331,7 +338,62 @@ class RoutePublisher(Node):
         posestamp.pose.orientation.x = q[1]
         posestamp.pose.orientation.z = q[2]
         posestamp.pose.orientation.w = q[3]
-        self.poses.insert( 0, posestamp )
+        wps.insert( 0, posestamp )
+
+        return wps
+
+    def cutRouteAfter( self ) -> list[geometry_msgs.msg.PoseStamped]:
+        wps = self.poses.copy()
+
+        points = [ (wp.pose.position.x, wp.pose.position.y) for wp in wps ]
+        lines = LineString( points )
+
+        if self.max_route_distance < 0.0:
+            return wps
+
+        if lines.length <= self.max_route_distance:
+            return wps
+
+        cut_point = lines.interpolate( self.max_route_distance )
+
+        sum = 0.0
+
+        i = 0
+        while i < len(wps) - 1:
+            wp_x = wps[i].pose.position.x
+            wp_y = wps[i].pose.position.y
+            wp_next_x = wps[i+1].pose.position.x
+            wp_next_y = wps[i+1].pose.position.y
+
+            line = LineString([(wp_x, wp_y), (wp_next_x, wp_next_y)])
+
+            if ( sum + line.length ) >= self.max_route_distance:
+                break
+            else:
+                sum = sum + line.length
+
+            i = i + 1
+
+        dx = cut_point.x - wps[i].pose.position.x
+        dy = cut_point.y - wps[i].pose.position.y
+        theta = math.atan2(dy, dx)
+        q = PyKDL.Rotation.RPY( 0.0, 0.0, theta ).GetQuaternion()
+
+        del wps[(i + 1):]
+
+        posestamp = geometry_msgs.msg.PoseStamped()
+        posestamp.header.stamp = self.path.header.stamp
+        posestamp.header.frame_id = self.pose_frame
+        posestamp.pose.position.x = cut_point.x
+        posestamp.pose.position.y = cut_point.y
+        posestamp.pose.position.z = 0.0
+        posestamp.pose.orientation.x = q[0]
+        posestamp.pose.orientation.x = q[1]
+        posestamp.pose.orientation.z = q[2]
+        posestamp.pose.orientation.w = q[3]
+        wps.append( posestamp )
+
+        return wps
 
     def sendGoalPose( self, posestamp ):
 
@@ -365,23 +427,39 @@ class RoutePublisher(Node):
 
         if self.modeNavi == RADIO_ID_TO_POSE:
             if ( not self.isValidDistanceRemaining ) and \
-                ( msg.feedback.distance_remaining >= self.reach_range ):
+                ( msg.feedback.distance_remaining >= self.reach_range_to_pose ):
                 self.isValidDistanceRemaining = True
 
             if ( self.isGoalAccepted ) and \
                 ( self.isValidDistanceRemaining ) and \
-                ( msg.feedback.distance_remaining < self.reach_range ):
+                ( msg.feedback.distance_remaining < self.reach_range_to_pose ):
                 if self.index + 1 < len(self.path.poses):
                     self.index = self.index + 1
                     self.isGoalAccepted = False
                     self.isValidDistanceRemaining = False
                     self.sendGoalPose( self.path.poses[self.index] )
         else:
-            if self.get_clock().now() > self.timLabelStatusUpdate :
-                self.timLabelStatusUpdate = self.get_clock().now() + rclpy.duration.Duration(seconds=1.0)
-                str = f'Distance remaining : {msg.feedback.distance_remaining:.02f} m'
-                self.lblStatus.setText( str )
-                self.get_logger().info( str )
+            if ( not self.isValidDistanceRemaining ) and \
+                ( msg.feedback.distance_remaining >= self.reach_range_through_poses ):
+                self.isValidDistanceRemaining = True
+
+            if ( self.isGoalAccepted ) and \
+                ( self.isValidDistanceRemaining ) and \
+                ( msg.feedback.distance_remaining < self.reach_range_through_poses ):
+                    self.isGoalAccepted = False
+                    self.isValidDistanceRemaining = False
+                    self.poses = self.cutRouteBefore()
+                    poses = self.cutRouteAfter()
+                    self.sendGoalPoses( poses )
+
+        if self.get_clock().now() > self.timLabelStatusUpdate :
+            self.timLabelStatusUpdate = self.get_clock().now() + rclpy.duration.Duration(seconds=1.0)
+            wps = self.cutRouteBefore()
+            points = [ (wp.pose.position.x, wp.pose.position.y) for wp in wps ]
+            lines = LineString( points )
+            str = f'Distance remaining : {lines.length:.02f} m'
+            self.lblStatus.setText( str )
+            self.get_logger().info( str )
 
     def responseCallback( self, future ):
         navi_handle = future.result()
@@ -401,6 +479,7 @@ class RoutePublisher(Node):
             self.isGoalAccepted = True
             str = f'Navigating point {self.index + 1}/{len(self.path.poses)}'
         else:
+            self.isGoalAccepted = True
             str = f'Navigating with {len(self.path.poses)} goals....'
         self.lblStatus.setText( str )
         self.get_logger().info( str )
@@ -418,7 +497,7 @@ class RoutePublisher(Node):
             status = future.result().status
 
         self.get_logger().info( f'1 {status}' )
-        self.get_logger().info( f'2 {future}' )
+        self.get_logger().info( f'2 {self.navi_handle.status}' )
         self.get_logger().info( f'3 {future.result()}' )
         self.get_logger().info( f'4 cancelled : {future.cancelled()}' )
 
@@ -432,6 +511,8 @@ class RoutePublisher(Node):
                     self.isValidDistanceRemaining = False
                     self.sendGoalPose( self.path.poses[self.index] )
             else:
+                self.isGoalAccepted = False
+                self.isValidDistanceRemaining = False
                 is_succeeded = True
 
             if is_succeeded:
@@ -439,16 +520,20 @@ class RoutePublisher(Node):
                 str = 'Navigate succeeded!'
                 self.lblStatus.setText( str )
                 self.get_logger().info( str )
-        elif status == action_msgs.msg.GoalStatus.STATUS_CANCELED:
+        elif ( self.navi_handle.status == action_msgs.msg.GoalStatus.STATUS_CANCELING or \
+                self.navi_handle.status == action_msgs.msg.GoalStatus.STATUS_CANCELED ) and \
+            status == action_msgs.msg.GoalStatus.STATUS_CANCELED:
             self.navi_handle = None
             str = 'Navigate canceled!'
             self.lblStatus.setText( str )
             self.get_logger().info( str )
-        elif status == action_msgs.msg.GoalStatus.STATUS_ABORTED:
+        elif self.navi_handle.status == action_msgs.msg.GoalStatus.STATUS_ABORTED and \
+            status == action_msgs.msg.GoalStatus.STATUS_ABORTED:
             self.navi_handle = None
             str = 'Navigate aborted!'
             self.lblStatus.setText( str )
             self.get_logger().info( str )
+
         else:
             pass
 
