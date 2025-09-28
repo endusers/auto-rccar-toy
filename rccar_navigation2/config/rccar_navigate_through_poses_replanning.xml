@@ -1,7 +1,9 @@
 <!-- ①パスの定期的な再計算はしない                                                       -->
 <!-- ②ゴールの更新はGlobalUpdatedGoalを使用                                              -->
-<!-- ③経路の再計算ができない場合は事象がクリアされるまで待機(リトライ100回)              -->
+<!-- ③経路の再計算ができない場合は事象がクリアされるまで待機(リトライ10回)               -->
 <!--   待機中は再計算を定期的に実施(3s周期)                                               -->
+<!-- ④事象がクリアされない場合は少し後ろに戻って(バックアップ)                           -->
+<!--   経路の再計算をする                                                                 -->
 
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
@@ -23,14 +25,19 @@
           </Inverter>
         </Fallback>
       </RateController>
-      <RecoveryNode number_of_retries="100" name="NavigateWithReplanning">
+      <RecoveryNode number_of_retries="3" name="NavigateWithReplanningFollowPath">
         <FollowPath path="{path}" controller_id="FollowPath"/>
         <Sequence>
           <Wait wait_duration="3" />
-          <BackUp backup_dist="0.30" backup_speed="0.05" time_allowance="30.0"/>
-          <RecoveryNode number_of_retries="100" name="ComputePathThroughPoses">
-            <ComputePathThroughPoses goals="{goals}" path="{path}" planner_id="GridBased"/>
-            <Wait wait_duration="3" />
+          <RecoveryNode number_of_retries="3" name="NavigateWithReplanningWait">
+            <RecoveryNode number_of_retries="10" name="ComputePathThroughPosesWait">
+              <ComputePathThroughPoses goals="{goals}" path="{path}" planner_id="GridBased"/>
+              <Wait wait_duration="3" />
+            </RecoveryNode>
+            <Sequence>
+              <BackUp backup_dist="0.50" backup_speed="0.1" time_allowance="50.0"/>
+              <Wait wait_duration="3" />
+            </Sequence>
           </RecoveryNode>
         </Sequence>
       </RecoveryNode>
