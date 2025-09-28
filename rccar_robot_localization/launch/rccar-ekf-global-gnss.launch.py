@@ -97,4 +97,28 @@ def generate_launch_description():
             ],
             output='both',
         ),
+
+        Node(
+            package='topic_tools',
+            executable='transform',
+            name='relay_odometry_global_sigma',
+            parameters=[
+                {
+                    'use_sim_time' : use_sim_time,
+                }
+            ],
+            arguments=[
+                '/odometry/global',
+                '/odometry/global_sigma_horizontal',
+                'std_msgs/Float32',
+                'std_msgs.msg.Float32(data=numpy.sqrt(m.pose.covariance[0]+m.pose.covariance[7]))',
+                '--import',
+                'std_msgs',
+                'numpy',
+            ],
+            output='both',
+        ),
     ])
+
+# Memo
+# ros2 param set /odometry_global_filter_node initial_pose "[0.0, 0.0, 0.0]"

@@ -45,6 +45,12 @@
   <node pkg="topic_tools" exec="relay_field" name="relay_navsat_status" output="both"
     args='/gnss/fix_raw /gnss/fix_raw_status std_msgs/msg/Float32 "{""data"": m.status.status}"'>
   </node>
+
+  <node pkg="topic_tools" exec="transform" name="relay_navsat_sigma" output="both"
+    args='/gnss/fix_raw /gnss/fix_raw_sigma_horizontal \
+    std_msgs/Float32 std_msgs.msg.Float32(data=numpy.sqrt(m.position_covariance[0]+m.position_covariance[4])) \
+    --import std_msgs numpy'>
+  </node>
 </launch>
 
 <!-- Memo -->
