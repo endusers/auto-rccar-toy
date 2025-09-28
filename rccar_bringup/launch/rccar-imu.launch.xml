@@ -1,4 +1,4 @@
-<!-- rccar-lidar.launch.xml -->
+<!-- rccar-imu.launch.xml -->
 
 <launch>
   <arg name="use_sim_time" default="false"/>
@@ -7,7 +7,7 @@
     <include file="$(find-pkg-share rccar_bringup)/launch/rccar-bno055.launch.py" />
   </group>
 
-  <node pkg="imu_orientation_corrector" exec="imu_orientation_corrector" name="rccar_lidar_bno055_corrector_node" output="both">
+  <node pkg="imu_orientation_corrector" exec="imu_orientation_corrector" name="rccar_bno055_corrector_node" output="both">
     <param name="use_sim_time" value="$(var use_sim_time)"/>
     <param name="base_frame" value="base_link"/>
     <param name="imu_frame" value="imu_link"/>

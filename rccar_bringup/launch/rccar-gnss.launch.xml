@@ -1,4 +1,4 @@
-<!-- rccar-gnss-only.launch.xml -->
+<!-- rccar-gnss.launch.xml -->
 
 <launch>
   <arg name="use_sim_time" default="false"/>
