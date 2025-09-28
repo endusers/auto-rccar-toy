@@ -31,7 +31,7 @@ class NavSatFixConditionalRelay : public rclcpp::Node
 		double_t override_covariance_north_;
 		double_t override_covariance_up_;
 
-		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr parameterSubscription_;
+		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr sub_parameter_;
 		rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr subscriber_;
 		rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr publisher_;
 

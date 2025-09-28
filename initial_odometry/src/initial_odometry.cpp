@@ -4,8 +4,8 @@
  * @brief       initial_odometry
  * @note        なし
  * 
- * @version     1.3.0
- * @date        2025/09/21
+ * @version     1.3.1
+ * @date        2025/09/28
  * 
  * @copyright   (C) 2023-2025 Motoyuki Endo
  */
@@ -22,9 +22,9 @@ const rclcpp::Duration InitialOdometry::INVALID_TIME = rclcpp::Duration( 10s );
 InitialOdometry::InitialOdometry()
 	: Node( "initial_odometry" )
 {
-	isValid_ = false;
+	is_valid_ = false;
 
-	timeInvalid_ = this->get_clock()->now();
+	tim_invalid_ = this->get_clock()->now();
 
 	std::vector<double> default_pose = { 0.0, 0.0, 0.0 };
 
@@ -40,13 +40,13 @@ InitialOdometry::InitialOdometry()
 	static_tf_br_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>( this );
 	parent_static_tf_br_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>( this );
 
-	parameterSubscription_ = this->create_subscription<rcl_interfaces::msg::ParameterEvent>(
+	sub_parameter_ = this->create_subscription<rcl_interfaces::msg::ParameterEvent>(
 		"/parameter_events", 10, std::bind( &InitialOdometry::UpdateParameters, this, _1 ) );
 
 	publisher_ = this->create_publisher<nav_msgs::msg::Odometry>( "odometry/initial", 10 );
 
 	subscription_ = this->create_subscription<nav_msgs::msg::Odometry>(
-		"odometry/gps", 10, std::bind( &InitialOdometry::SubscribeGpsOdom, this, _1 ) );
+		"odometry/gps", 10, std::bind( &InitialOdometry::GpsOdometryCallback, this, _1 ) );
 
 	timer_ = this->create_wall_timer( 100ms, std::bind( &InitialOdometry::MainCycle, this ) );
 
@@ -65,13 +65,13 @@ void InitialOdometry::MainLoop( void )
 
 void InitialOdometry::MainCycle( void )
 {
-	if( !isValid_ )
+	if( !is_valid_ )
 	{
 		PublishInitialOdom();
 	}
 
-	if( this->get_clock()->now() > timeInvalid_ ){
-		isValid_ = false;
+	if( this->get_clock()->now() > tim_invalid_ ){
+		is_valid_ = false;
 	}
 }
 
@@ -162,12 +162,12 @@ void InitialOdometry::PublishParentStaticTf( void )
 	parent_static_tf_br_->sendTransform( tf_msg );
 }
 
-void InitialOdometry::SubscribeGpsOdom( const nav_msgs::msg::Odometry::SharedPtr msg )
+void InitialOdometry::GpsOdometryCallback( const nav_msgs::msg::Odometry::SharedPtr msg )
 {
 	UNUSED_VARIABLE( msg );
 
-	timeInvalid_ = this->get_clock()->now() + INVALID_TIME;
-	isValid_ = true;
+	tim_invalid_ = this->get_clock()->now() + INVALID_TIME;
+	is_valid_ = true;
 }
 
 void InitialOdometry::UpdateParameters( const rcl_interfaces::msg::ParameterEvent::SharedPtr event )

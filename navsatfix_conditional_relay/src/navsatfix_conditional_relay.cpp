@@ -26,7 +26,7 @@ NavSatFixConditionalRelay::NavSatFixConditionalRelay()
 	override_covariance_north_ = this->declare_parameter<double_t>( "override_covariance_north", 1e6 );
 	override_covariance_up_ = this->declare_parameter<double_t>( "override_covariance_up", 1e6 );
 
-	parameterSubscription_ = this->create_subscription<rcl_interfaces::msg::ParameterEvent>(
+	sub_parameter_ = this->create_subscription<rcl_interfaces::msg::ParameterEvent>(
 		"/parameter_events", 10, std::bind( &NavSatFixConditionalRelay::UpdateParameters, this, _1 ) );
 
 	auto qos = rclcpp::SensorDataQoS();

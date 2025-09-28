@@ -4,8 +4,8 @@
  * @brief       odometry_frame_remap
  * @note        なし
  * 
- * @version     1.1.1
- * @date        2025/09/21
+ * @version     1.1.2
+ * @date        2025/09/28
  * 
  * @copyright   (C) 2025 Motoyuki Endo
  */
@@ -26,7 +26,7 @@ class OdometryFrameRemap : public rclcpp::Node
 
 		rclcpp::TimerBase::SharedPtr timer_;
 
-		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr parameterSubscription_;
+		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr sub_parameter_;
 		rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr subscriber_;
 		rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr publisher_;
 

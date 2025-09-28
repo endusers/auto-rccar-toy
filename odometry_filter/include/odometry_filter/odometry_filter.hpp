@@ -42,8 +42,8 @@ class OdometryFilter : public rclcpp::Node
 		std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
 		std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
-		void SubscribeOdometry( const nav_msgs::msg::Odometry::SharedPtr msg );
-		void SubscribeInitialPose( const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg );
+		void OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr msg );
+		void InitialPoseCallback( const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg );
 		void SetOffsetTransform( void );
 		void UpdateParameters( const rcl_interfaces::msg::ParameterEvent::SharedPtr event );
 

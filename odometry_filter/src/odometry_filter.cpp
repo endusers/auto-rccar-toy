@@ -31,10 +31,10 @@ OdometryFilter::OdometryFilter()
 	sub_parameter_ = this->create_subscription<rcl_interfaces::msg::ParameterEvent>(
 		"/parameter_events", 10, std::bind( &OdometryFilter::UpdateParameters, this, _1 ) );
 	sub_initialpose_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-		"/initialpose", 10, std::bind( &OdometryFilter::SubscribeInitialPose, this, _1 ) );
+		"/initialpose", 10, std::bind( &OdometryFilter::InitialPoseCallback, this, _1 ) );
 
 	subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
-		"odom/in", 10, std::bind( &OdometryFilter::SubscribeOdometry, this, _1 ) );
+		"odom/in", 10, std::bind( &OdometryFilter::OdometryCallback, this, _1 ) );
 
 	publisher_ = this->create_publisher<nav_msgs::msg::Odometry>( "odom/out", 10 );
 
@@ -48,7 +48,7 @@ OdometryFilter::~OdometryFilter()
 	// TODO
 }
 
-void OdometryFilter::SubscribeOdometry( const nav_msgs::msg::Odometry::SharedPtr msg )
+void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr msg )
 {
 	auto odom = *msg;
 
@@ -124,7 +124,7 @@ void OdometryFilter::SetOffsetTransform( void )
 	offset_tf_.setRotation( q );
 }
 
-void OdometryFilter::SubscribeInitialPose( const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg )
+void OdometryFilter::InitialPoseCallback( const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg )
 {
 	auto odom = *msg;
 

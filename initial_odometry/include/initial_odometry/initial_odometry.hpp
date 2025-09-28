@@ -4,8 +4,8 @@
  * @brief       initial_odometry
  * @note        なし
  * 
- * @version     1.3.0
- * @date        2025/09/21
+ * @version     1.3.1
+ * @date        2025/09/28
  * 
  * @copyright   (C) 2023-2025 Motoyuki Endo
  */
@@ -20,9 +20,9 @@ class InitialOdometry : public rclcpp::Node
 	private:
 		static const rclcpp::Duration INVALID_TIME;
 
-		bool isValid_;
+		bool is_valid_;
 
-		rclcpp::Time timeInvalid_;
+		rclcpp::Time tim_invalid_;
 
 		std::string frame_id_;
 		std::string child_frame_id_;
@@ -38,7 +38,7 @@ class InitialOdometry : public rclcpp::Node
 
 		rclcpp::TimerBase::SharedPtr timer_;
 
-		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr parameterSubscription_;
+		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr sub_parameter_;
 
 		rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr publisher_;
 		rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr subscription_;
@@ -47,7 +47,7 @@ class InitialOdometry : public rclcpp::Node
 		void MainCycle( void );
 		void PublishInitialOdom( void );
 		void PublishParentStaticTf( void );
-		void SubscribeGpsOdom( const nav_msgs::msg::Odometry::SharedPtr msg );
+		void GpsOdometryCallback( const nav_msgs::msg::Odometry::SharedPtr msg );
 		void UpdateParameters( const rcl_interfaces::msg::ParameterEvent::SharedPtr event );
 
 	public:
