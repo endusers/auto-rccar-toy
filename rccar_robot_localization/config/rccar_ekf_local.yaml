@@ -10,6 +10,8 @@ ekf_filter_local_node:
     print_diagnostics: true
     debug: false
 
+    publish_tf: true
+
     map_frame: map
     odom_frame: odom
     base_link_frame: base_link

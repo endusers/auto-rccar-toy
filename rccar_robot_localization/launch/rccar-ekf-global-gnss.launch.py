@@ -46,7 +46,7 @@ def generate_launch_description():
         Node(
             package='odometry_frame_remap',
             executable='odometry_frame_remap',
-            name='odometry_gps_frame_remap_node',
+            name='odometry_local_frame_remap_node',
             parameters=[
                 {
                     'use_sim_time' : use_sim_time,
@@ -72,6 +72,29 @@ def generate_launch_description():
                 parameters_file_path,
                 {"use_sim_time": use_sim_time},
             ],
-            remappings=[('/odometry/filtered','/odometry/global'), ('/set_pose', '/initialpose')],
+            remappings=[('/odometry/filtered','/odometry/global_raw'), ('/set_pose', '/set_pose')],
+        ),
+
+        Node(
+            package='odometry_filter',
+            executable='odometry_filter',
+            name='odometry_global_filter_node',
+            parameters=[
+                {
+                    'use_sim_time' : use_sim_time,
+                    'map_frame' : 'map',
+                    'odom_frame' : 'odom',
+                    'base_link_frame' : 'base_link',
+                    'initial_pose' : [0.0, 0.0, 0.0],
+                    'update_yaw_only' : True,
+                    'publish_tf' : True,
+                }
+            ],
+            remappings=[
+                ('/odom/in','/odometry/global_raw'),
+                ('/odom/out','/odometry/global'),
+                ('/initialpose','/initialpose'),
+            ],
+            output='both',
         ),
     ])
