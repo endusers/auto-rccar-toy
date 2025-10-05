@@ -54,6 +54,7 @@ class RoutePublisher(Node):
         self.utm_frame : string = ''
         self.map_frame : string = ''
         self.pose_frame : string = ''
+        self.path_trim_radius : float = 2.0
         self.reach_range_to_pose : float = 1.0
         self.reach_range_through_poses : float = 10.0
         self.max_route_distance : float = 30.0
@@ -61,6 +62,7 @@ class RoutePublisher(Node):
         self.declare_parameter( 'utm_frame', 'utm' )
         self.declare_parameter( 'map_frame', 'map' )
         self.declare_parameter( 'pose_frame', 'map' )
+        self.declare_parameter( 'path_trim_radius', 2.0 )
         self.declare_parameter( 'reach_range_to_pose', 1.0 )
         self.declare_parameter( 'reach_range_through_poses', 10.0 )
         self.declare_parameter( 'max_route_distance', 30.0 )
@@ -68,6 +70,7 @@ class RoutePublisher(Node):
         self.utm_frame = self.get_parameter( "utm_frame" ).value
         self.map_frame = self.get_parameter( "map_frame" ).value
         self.pose_frame = self.get_parameter( "pose_frame" ).value
+        self.path_trim_radius = self.get_parameter( "path_trim_radius" ).value
         self.reach_range_to_pose = self.get_parameter( "reach_range_to_pose" ).value
         self.reach_range_through_poses = self.get_parameter( "reach_range_through_poses" ).value
         self.max_route_distance = self.get_parameter( "max_route_distance" ).value
@@ -249,6 +252,7 @@ class RoutePublisher(Node):
                 #    self.poses.append( posestamp )
 
                 self.poses = self.cutRouteBefore()
+                self.poses = self.trimRouteBefore()
 
                 self.path = nav_msgs.msg.Path()
                 self.path.header.stamp = self.get_clock().now().to_msg()
@@ -260,22 +264,12 @@ class RoutePublisher(Node):
 
                 self.pubRoute.publish( self.path )
 
-                pose : geometry_msgs.msg.Pose = self.odom.pose.pose
-                now_x : float = pose.position.x
-                now_y : float = pose.position.y
-
-                dx : float = self.path.poses[0].pose.position.x - now_x
-                dy : float = self.path.poses[0].pose.position.y - now_y
-                distance : float = math.hypot(dx, dy)
-
                 self.navi_handle = None
                 self.modeNavi = self.radioNaviMode.checkedId()
                 self.isGoalAccepted = False
                 self.isValidDistanceRemaining = False
                 if self.modeNavi == RADIO_ID_TO_POSE:
                     self.index = 0
-                    if distance < self.reach_range_to_pose:
-                        self.index = self.index + 1
                     self.sendGoalPose( self.path.poses[self.index] )
                 else:
                     poses = self.cutRouteAfter()
@@ -392,6 +386,82 @@ class RoutePublisher(Node):
         posestamp.pose.orientation.z = q[2]
         posestamp.pose.orientation.w = q[3]
         wps.append( posestamp )
+
+        return wps
+
+    def trimRouteBefore( self ) -> list[geometry_msgs.msg.PoseStamped]:
+        wps = self.poses.copy()
+
+        pose : geometry_msgs.msg.Pose = self.odom.pose.pose
+        now_x : float = pose.position.x
+        now_y : float = pose.position.y
+
+        point = Point( now_x, now_y )
+        circle = point.buffer( self.path_trim_radius )
+
+        points = [ (wp.pose.position.x, wp.pose.position.y) for wp in wps ]
+        lines = LineString( points )
+
+        intersections = lines.intersection( circle.boundary )
+
+        if intersections.is_empty:
+            return wps
+
+        projected_distance = lines.project( point )
+
+        intersection_points : list = []
+        if intersections.geom_type == "Point":
+            intersection_points.append( intersections )
+        elif intersections.geom_type == "MultiPoint":
+            intersection_points.extend( intersections.geoms )
+        else:
+            return wps
+
+        cut_distance : float = sys.float_info.max
+        for p in intersection_points:
+            distance = lines.project( p )
+            if distance >= projected_distance and distance <= cut_distance:
+                cut_distance = distance
+
+        if cut_distance >= lines.length:
+            return wps
+
+        cut_point = lines.interpolate( cut_distance )
+
+        sum = 0.0
+
+        i = 0
+        while i < len(wps) - 1:
+            wp_x = wps[i].pose.position.x
+            wp_y = wps[i].pose.position.y
+            wp_next_x = wps[i+1].pose.position.x
+            wp_next_y = wps[i+1].pose.position.y
+
+            line = LineString([(wp_x, wp_y), (wp_next_x, wp_next_y)])
+
+            if ( sum + line.length ) >= cut_distance:
+                break
+            else:
+                sum = sum + line.length
+
+            i = i + 1
+
+        dx = cut_point.x - wps[i].pose.position.x
+        dy = cut_point.y - wps[i].pose.position.y
+        theta = math.atan2(dy, dx)
+        q = PyKDL.Rotation.RPY( 0.0, 0.0, theta ).GetQuaternion()
+
+        del wps[:(i + 1)]
+
+        posestamp = geometry_msgs.msg.PoseStamped()
+        posestamp.pose.position.x = cut_point.x
+        posestamp.pose.position.y = cut_point.y
+        posestamp.pose.position.z = 0.0
+        posestamp.pose.orientation.x = q[0]
+        posestamp.pose.orientation.x = q[1]
+        posestamp.pose.orientation.z = q[2]
+        posestamp.pose.orientation.w = q[3]
+        wps.insert( 0, posestamp )
 
         return wps
 
