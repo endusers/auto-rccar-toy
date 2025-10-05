@@ -37,6 +37,7 @@ OdometryFilter::OdometryFilter()
 	SetOffsetTransform();
 
 	is_odom_update_ = false;
+	tf_map_to_odom_ = {};
 
 	sub_parameter_ = this->create_subscription<rcl_interfaces::msg::ParameterEvent>(
 		"/parameter_events", 10, std::bind( &OdometryFilter::UpdateParameters, this, _1 ) );
@@ -147,19 +148,8 @@ void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr 
 		return;
 	}
 
-	geometry_msgs::msg::TransformStamped map_to_base_msg;
-	if( !is_odom_update_ )
-	{
-		try
-		{
-			map_to_base_msg = tf_buffer_->lookupTransform( map_frame_, base_link_frame_, tf2::TimePointZero );
-		}
-		catch( tf2::TransformException &ex )
-		{
-			RCLCPP_WARN( this->get_logger(), "TF not available yet: %s", ex.what() );
-			return;
-		}
-	}
+	tf2::Transform odom_to_base;
+	tf2::fromMsg( odom_to_base_msg.transform, odom_to_base );
 
 	tf2::Transform map_to_base;
 	tf2::fromMsg( odom.pose.pose, map_to_base );
@@ -171,11 +161,8 @@ void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr 
 	}
 	else
 	{
-		tf2::fromMsg( map_to_base_msg.transform, corrected_map_to_base );
+		corrected_map_to_base = tf_map_to_odom_ * odom_to_base;
 	}
-
-	tf2::Transform odom_to_base;
-	tf2::fromMsg( odom_to_base_msg.transform, odom_to_base );
 
 	tf2::Transform map_to_odom;
 	map_to_odom = corrected_map_to_base * odom_to_base.inverse();
@@ -206,6 +193,7 @@ void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr 
 	pub_odom_->publish( odom );
 
 	odom_ = odom;
+	tf_map_to_odom_ = map_to_odom;
 }
 
 void OdometryFilter::OdometryUpdateCheckCallback( const nav_msgs::msg::Odometry::SharedPtr msg )

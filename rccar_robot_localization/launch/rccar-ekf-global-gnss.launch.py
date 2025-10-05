@@ -90,7 +90,7 @@ def generate_launch_description():
                     'update_yaw_only' : True,
                     'publish_tf' : True,
                     'enable_odom_update_covariance_check' : True,
-                    'odom_update_covariance_sigma_threshold' : 1.0,
+                    'odom_update_covariance_sigma_threshold' : 0.5,
                 }
             ],
             remappings=[

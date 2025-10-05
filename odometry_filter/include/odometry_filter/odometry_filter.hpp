@@ -42,6 +42,7 @@ class OdometryFilter : public rclcpp::Node
 		tf2::Transform offset_tf_;
 
 		bool is_odom_update_;
+		tf2::Transform tf_map_to_odom_;
 
 		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr sub_parameter_;
 		rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr sub_initialpose_;
