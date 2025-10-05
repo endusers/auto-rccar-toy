@@ -1,4 +1,4 @@
-<!-- rccar-robot-launch.xml -->
+<!-- rccar-rviz.launch.xml -->
 
 <launch>
   <arg name="use_sim_time" default="false"/>

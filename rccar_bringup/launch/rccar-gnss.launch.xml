@@ -1,0 +1,59 @@
+<!-- rccar-gnss.launch.xml -->
+
+<launch>
+  <arg name="use_sim_time" default="false"/>
+  <arg name="gnss_only" default="false"/>
+
+  <group unless="$(var use_sim_time)">
+    <include file="$(find-pkg-share rccar_bringup)/launch/rccar-ublox-gps-node.launch.py" />
+  </group>
+
+  <group if="$(var gnss_only)">
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="odom_to_base_link" args="0 0 0 0 0 0 odom base_link">
+      <param name="use_sim_time" value="$(var use_sim_time)"/>
+    </node>
+  </group>
+
+  <node pkg="initial_odometry" exec="initial_odometry" name="initial_odometry_node" output="both">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="frame_id" value="gnss_init"/>
+    <param name="child_frame_id" value="gnss_anchor"/>
+    <param name="initial_pose" value="[0.0, 0.0, 0.0]"/>
+    <param name="publish_tf" value="true"/>
+    <param name="enable_parent_frame" value="true"/>
+    <param name="parent_frame" value="base_link"/>
+    <param name="parent_initial_pose" value="[0.0, 0.0, 0.0]"/>
+    <remap from="odometry/initial" to="odometry/initial"/>
+    <remap from="odometry/gps" to="odometry/gps"/>
+  </node>
+
+  <node pkg="navsatfix_conditional_relay" exec="navsatfix_conditional_relay" name="navsatfix_conditional_relay_node" output="both">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="relay_status_threshold" value="0"/>
+    <param name="relay_sigma_threshold" value="0.0"/>
+    <param name="enable_status_override" value="$(var use_sim_time)"/>
+    <param name="override_status" value="2"/>
+    <param name="enable_covariance_override" value="true"/>
+    <param name="override_covariance_sigma_threshold" value="0.3"/>
+    <param name="override_covariance_east" value="1e6"/>
+    <param name="override_covariance_north" value="1e6"/>
+    <param name="override_covariance_up" value="1e6"/>
+    <remap from="gnss/in" to="gnss/fix_raw"/>
+    <remap from="gnss/out" to="gnss/fix"/>
+  </node>
+
+  <node pkg="topic_tools" exec="relay_field" name="relay_navsat_status" output="both"
+    args='/gnss/fix_raw /gnss/fix_raw_status std_msgs/msg/Float32 "{""data"": m.status.status}"'>
+  </node>
+
+  <node pkg="topic_tools" exec="transform" name="relay_navsat_sigma" output="both"
+    args='/gnss/fix_raw /gnss/fix_raw_sigma_horizontal \
+    std_msgs/Float32 std_msgs.msg.Float32(data=numpy.sqrt(m.position_covariance[0]+m.position_covariance[4])) \
+    --import std_msgs numpy'>
+  </node>
+</launch>
+
+<!-- Memo -->
+<!-- ros2 param set /navsatfix_conditional_relay_node relay_threshold 0 -->
+<!-- ros2 param set /navsatfix_conditional_relay_node override_status 1 -->
+<!-- ros2 param set /initial_odometry_node parent_initial_pose "[0.0, 0.0, 0.0]" -->

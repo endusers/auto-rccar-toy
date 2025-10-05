@@ -31,6 +31,7 @@ configurable_parameters = [{'name': 'camera_name',                  'default': '
                            {'name': 'config_file',                  'default': "''", 'description': 'yaml config file'},
                            {'name': 'json_file_path',               'default': "''", 'description': 'allows advanced configuration'},
                            {'name': 'initial_reset',                'default': 'true', 'description': "''"},
+                           {'name': 'accelerate_gpu_with_glsl',     'default': "false", 'description': 'enable GPU acceleration with GLSL'},
                            {'name': 'rosbag_filename',              'default': "''", 'description': 'A realsense bagfile to run from as a device'},
                            {'name': 'log_level',                    'default': 'info', 'description': 'debug log level [DEBUG|INFO|WARN|ERROR|FATAL]'},
                            {'name': 'output',                       'default': 'both', 'description': 'pipe node output [screen|log]'},
@@ -39,10 +40,10 @@ configurable_parameters = [{'name': 'camera_name',                  'default': '
                            {'name': 'rgb_camera.color_format',      'default': 'RGB8', 'description': 'color stream format'},
                            {'name': 'rgb_camera.enable_auto_exposure', 'default': 'true', 'description': 'enable/disable auto exposure for color image'},
                            {'name': 'enable_depth',                 'default': 'true', 'description': 'enable depth stream'},
-                           {'name': 'enable_infra',                 'default': 'false', 'description': 'enable infra0 stream'},
-                           {'name': 'enable_infra1',                'default': 'false', 'description': 'enable infra1 stream'},
-                           {'name': 'enable_infra2',                'default': 'false', 'description': 'enable infra2 stream'},
-                           {'name': 'depth_module.profile',         'default': '640,480,30', 'description': 'depth module profile'},
+                           {'name': 'enable_infra',                 'default': 'true', 'description': 'enable infra0 stream'},
+                           {'name': 'enable_infra1',                'default': 'true', 'description': 'enable infra1 stream'},
+                           {'name': 'enable_infra2',                'default': 'true', 'description': 'enable infra2 stream'},
+                           {'name': 'depth_module.depth_profile',   'default': '640,480,30', 'description': 'depth module profile'},
                            {'name': 'depth_module.depth_format',    'default': 'Z16', 'description': 'depth stream format'},
                            {'name': 'depth_module.infra_format',    'default': 'RGB8', 'description': 'infra0 stream format'},
                            {'name': 'depth_module.infra1_format',   'default': 'Y8', 'description': 'infra1 stream format'},
@@ -55,7 +56,7 @@ configurable_parameters = [{'name': 'camera_name',                  'default': '
                            {'name': 'depth_module.gain.1',          'default': '16', 'description': 'Depth module first gain value. Used for hdr_merge filter'},
                            {'name': 'depth_module.exposure.2',      'default': '1', 'description': 'Depth module second exposure value. Used for hdr_merge filter'},
                            {'name': 'depth_module.gain.2',          'default': '16', 'description': 'Depth module second gain value. Used for hdr_merge filter'},
-                           {'name': 'enable_sync',                  'default': 'false', 'description': "'enable sync mode'"},
+                           {'name': 'enable_sync',                  'default': 'true', 'description': "'enable sync mode'"},
                            {'name': 'enable_rgbd',                  'default': 'false', 'description': "'enable rgbd topic'"},
                            {'name': 'enable_gyro',                  'default': 'true', 'description': "'enable gyro stream'"},
                            {'name': 'enable_accel',                 'default': 'true', 'description': "'enable accel stream'"},
@@ -68,7 +69,7 @@ configurable_parameters = [{'name': 'camera_name',                  'default': '
                            {'name': 'diagnostics_period',           'default': '0.0', 'description': 'Rate of publishing diagnostics. 0=Disabled'},
                            {'name': 'publish_tf',                   'default': 'true', 'description': '[bool] enable/disable publishing static & dynamic TF'},
                            {'name': 'tf_publish_rate',              'default': '0.0', 'description': '[double] rate in Hz for publishing dynamic TF'},
-                           {'name': 'pointcloud.enable',            'default': 'true', 'description': ''},
+                           {'name': 'pointcloud.enable',            'default': 'false', 'description': ''},
                            {'name': 'pointcloud.stream_filter',     'default': '0', 'description': 'texture stream for pointcloud'}, # RS2_STREAM_ANY 
                            {'name': 'pointcloud.stream_index_filter','default': '0', 'description': 'texture stream index for pointcloud'},
                            {'name': 'pointcloud.ordered_pc',        'default': 'false', 'description': ''},
@@ -98,6 +99,14 @@ def yaml_to_dict(path_to_yaml):
 def launch_setup(context, params, param_name_suffix=''):
     _config_file = LaunchConfiguration('config_file' + param_name_suffix).perform(context)
     params_from_file = {} if _config_file == "''" else yaml_to_dict(_config_file)
+
+    _output = LaunchConfiguration('output' + param_name_suffix)
+    if(os.getenv('ROS_DISTRO') == 'foxy'):
+        # Foxy doesn't support output as substitution object (LaunchConfiguration object)
+        # but supports it as string, so we fetch the string from this substitution object
+        # see related PR that was merged for humble, iron, rolling: https://github.com/ros2/launch/pull/577
+        _output = context.perform_substitution(_output)
+
     return [
         launch_ros.actions.Node(
             package='realsense2_camera',
@@ -106,7 +115,7 @@ def launch_setup(context, params, param_name_suffix=''):
             executable='realsense2_camera_node',
             parameters=[params, params_from_file],
             remappings=[('/camera/imu','/camera/imu_raw')],
-            output=LaunchConfiguration('output' + param_name_suffix),
+            output=_output,
             arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level' + param_name_suffix)],
             emulate_tty=True,
             )

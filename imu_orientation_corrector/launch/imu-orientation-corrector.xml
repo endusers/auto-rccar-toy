@@ -1,0 +1,13 @@
+<!-- imu-orientation-corrector.xml -->
+
+<launch>
+  <arg name="use_sim_time" default="false"/>
+
+  <node pkg="imu_orientation_corrector" exec="imu_orientation_corrector" name="imu_orientation_corrector_node" output="both">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="base_frame" value="base_link"/>
+    <param name="imu_frame" value="sensor_imu_frame"/>
+    <param name="use_average_calibration" value="true"/>
+    <param name="collection_duration_sec" value="3.0"/>
+  </node>
+</launch>

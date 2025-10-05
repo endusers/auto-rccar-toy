@@ -1,0 +1,15 @@
+<!-- rccar-multi-imu.launch.xml -->
+
+<launch>
+  <arg name="use_sim_time" default="false"/>
+
+  <node pkg="cxd5602pwbimu_localizer_node" exec="localizer_node" name="rccar_multi_imu_localizer_node" output="both">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="serial_port" value="/dev/ttyUSB0"/>
+    <param name="baud_rate" value="115200"/>
+    <param name="tf_parent_frame" value="map"/>
+    <param name="tf_child_frame" value="multi_imu_link"/>
+    <remap from="imu/data_raw" to="multi_imu/imu_raw"/>
+    <remap from="pose" to="multi_imu/pose"/>
+  </node>
+</launch>
