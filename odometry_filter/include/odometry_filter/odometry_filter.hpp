@@ -30,6 +30,8 @@ class OdometryFilter : public rclcpp::Node
 		std::vector<double> initial_pose_;
 		bool update_yaw_only_;
 		bool publish_tf_;
+		bool enable_odom_update_covariance_check_;
+		double_t odom_update_covariance_sigma_threshold_;
 
 		rclcpp::TimerBase::SharedPtr timer_;
 
@@ -39,10 +41,13 @@ class OdometryFilter : public rclcpp::Node
 
 		tf2::Transform offset_tf_;
 
+		bool is_odom_update_;
+
 		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr sub_parameter_;
 		rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr sub_initialpose_;
 
-		rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr subscriber_;
+		rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
+		rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_check_;
 		rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odom_;
 		rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_twist_;
 
@@ -52,6 +57,7 @@ class OdometryFilter : public rclcpp::Node
 
 		void MainCycle( void );
 		void OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr msg );
+		void OdometryUpdateCheckCallback( const nav_msgs::msg::Odometry::SharedPtr msg );
 		void InitialPoseCallback( const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg );
 		void SetOffsetTransform( void );
 		void UpdateParameters( const rcl_interfaces::msg::ParameterEvent::SharedPtr event );

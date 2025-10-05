@@ -89,12 +89,15 @@ def generate_launch_description():
                     'initial_pose' : [0.0, 0.0, 0.0],
                     'update_yaw_only' : True,
                     'publish_tf' : True,
+                    'enable_odom_update_covariance_check' : True,
+                    'odom_update_covariance_sigma_threshold' : 1.0,
                 }
             ],
             remappings=[
                 ('/odom/in','/odometry/global_raw'),
                 ('/odom/out','/odometry/global'),
                 ('/odom/out_twist_resampler','/odometry/global_twist_resampler'),
+                ('/odom/odom_update_check','/odometry/gps'),
                 ('/initialpose','/initialpose'),
             ],
             output='both',

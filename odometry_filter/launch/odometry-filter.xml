@@ -12,8 +12,12 @@
     <param name="initial_pose" value="[0.0, 0.0, 0.0]"/>
     <param name="update_yaw_only" value="false"/>
     <param name="publish_tf" value="false"/>
-    <remap from="odom/in" to="odometry_raw"/>
-    <remap from="odom/out" to="odometry"/>
+    <param name="enable_odom_update_covariance_check" value="true"/>
+    <param name="odom_update_covariance_sigma_threshold" value="3.0"/>
+    <remap from="odom/in" to="odom/in"/>
+    <remap from="odom/out" to="odom/out"/>
+    <remap from="odom/out_twist_resampler" to="odom/out_twist_resampler"/>
+    <remap from="odom/odom_update_check" to="odometry/odom_update_check"/>
     <remap from="initialpose" to="initialpose"/>
   </node>
 </launch>
