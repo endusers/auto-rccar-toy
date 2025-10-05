@@ -1,0 +1,14 @@
+rccar_lidar_pointcloud_to_laserscan_node:
+  ros__parameters:
+    target_frame : livox_frame
+    transform_tolerance : 0.01
+    min_height : -0.20        # for bronco
+    max_height : 0.1
+    angle_min : -3.1415
+    angle_max : 3.1415
+    angle_increment : 0.0058  # M_PI/360.0
+    scan_time : 0.033
+    range_min : 0.3
+    range_max : 10.0
+    use_inf : true
+    inf_epsilon : 1.0

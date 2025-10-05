@@ -59,9 +59,9 @@ git checkout -B foxy-devel 73b3061c5a97fc5846112b0ea2da70c6e24d9782
 
 # realsense-ros
 cd ${WORKSPACE}/src
-git clone -b ros2-development 'https://github.com/IntelRealSense/realsense-ros.git'
+git clone -b ros2-master 'https://github.com/IntelRealSense/realsense-ros.git'
 cd ${WORKSPACE}/src/realsense-ros
-git checkout -B ros2-development d7b029fe90048e7b1a60aedfde36f2c3ebe05d60
+git checkout -B ros2-master 1cbd81be81e807eefb46f098e76381888ffc7001
 
 # robot_localization
 cd ${WORKSPACE}/src
@@ -103,27 +103,82 @@ git clone -b humble 'https://github.com/micro-ROS/micro_ros_msgs.git'
 cd ${WORKSPACE}/src/uros/micro_ros_msgs
 git checkout -B humble 9f9ab03b5d7a25fd9ff0c6df4f11838905d30ca5
 
+# rtabmap
+cd ${WORKSPACE}/src
+git clone -b humble-devel 'https://github.com/introlab/rtabmap.git'
+cd ${WORKSPACE}/src/rtabmap
+git checkout -B humble-devel bc9da105892bbe8fc26b04fed9c0d7150e2b76c0
+cd ${WORKSPACE}/src
+git clone -b humble-devel 'https://github.com/introlab/rtabmap_ros.git'
+cd ${WORKSPACE}/src/rtabmap_ros
+git checkout -B humble-devel f2b0aa7ceecfaca824b1c6a67b31a6a448ff8b3b
+
+# livox_ros_driver2
+cd ${WORKSPACE}/src
+git clone -b 1.2.4 'https://github.com/Livox-SDK/livox_ros_driver2.git'
+
+# livox_laser_simulation
+cd ${WORKSPACE}/src
+git clone -b main 'https://github.com/LihanChen2004/livox_laser_simulation_ros2.git'
+cd ${WORKSPACE}/src/livox_laser_simulation_ros2
+git checkout -B main cee09dc9eea6e0a9822735bbc98c925441bbb019
+# git clone -b main 'https://github.com/stm32f303ret6/livox_laser_simulation_RO2'
+
+# FAST_LIO
+cd ${WORKSPACE}/src
+git clone -b ROS2 https://github.com/hku-mars/FAST_LIO.git --recurse-submodules
+cd ${WORKSPACE}/src/FAST_LIO
+git checkout -B ROS2 a4743b095409588842a5b30ddfa27e29d2f99164 --recurse-submodules
+
+# lidar_localization_ros2
+cd ${WORKSPACE}/src
+git clone -b humble https://github.com/rsasaki0109/lidar_localization_ros2.git
+cd ${WORKSPACE}/src/lidar_localization_ros2
+git checkout -B humble 0745ccf18b486456cce697b41ec2fd6d816ab42b
+
+# ndt_omp_ros2
+cd ${WORKSPACE}/src
+git clone -b humble https://github.com/rsasaki0109/ndt_omp_ros2.git
+cd ${WORKSPACE}/src/ndt_omp_ros2
+git checkout -B humble 41bdfba539bb4fe8becd4bc6cf9cd5e5ad35dab1
+
+# cxd5602pwbimu_localizer_node
+cd ${WORKSPACE}/src
+git clone -b main https://github.com/hijimasa/cxd5602pwbimu_localizer_node.git
+cd ${WORKSPACE}/src/cxd5602pwbimu_localizer_node
+git checkout -B main c0ed0eebbe2b422c67cc07f4c7da10d420fe46cb
+
 cd ${WORKSPACE}/src
 
 # auto-rccar-toy
 cp -rf ${DIR} ${WORKSPACE}/src/auto-rccar-toy
 
+# map extract
+unzip ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/empty.zip -d ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/
+unzip ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/smalltown.zip -d ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/
+unzip ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/cafe.zip -d ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/
+rm -rf ${WORKSPACE}/src/auto-rccar-toy/rccar_navigation2/map/*.zip
+
 # update-src
 cp -rf ${DIR}/scripts/update-src/realsense-ros ${WORKSPACE}/src
 cp -rf ${DIR}/scripts/update-src/navigation2 ${WORKSPACE}/src
+cp -rf ${DIR}/scripts/update-src/livox_ros_driver2 ${WORKSPACE}/src
+rm -rf ${WORKSPACE}/src/auto-rccar-toy/scripts/update-src
 
 # not support gazebo-ros-pkgs
 if [ $(uname -m) != "x86_64" ]
 then
     rm -rf ${WORKSPACE}/src/realsense_gazebo_plugin
     rm -rf ${WORKSPACE}/src/navigation2/nav2_system_tests
+    rm -rf ${WORKSPACE}/src/livox_laser_simulation_ros2
 fi
 
 # build
 cd ${WORKSPACE}
-rosdep update
-rosdep install -y --from-paths ./src --ignore-src
+# rosdep update
+# rosdep install -y --from-paths ./src --ignore-src
 colcon build --symlink-install
+# colcon build --symlink-install --parallel-workers 1
 
 # RTKLIB
 if [ ${INSTALL_RTKLIB} = ON ]

@@ -21,6 +21,8 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
@@ -30,7 +32,7 @@ add_executable(initial_odometry
   src/initial_odometry_main.cpp
   src/initial_odometry.cpp
 )
-ament_target_dependencies(initial_odometry rclcpp nav_msgs tf2_geometry_msgs)
+ament_target_dependencies(initial_odometry rclcpp tf2 tf2_ros nav_msgs tf2_geometry_msgs)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

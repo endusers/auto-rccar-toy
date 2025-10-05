@@ -47,8 +47,8 @@ def generate_launch_description():
     ublox_gps_node = launch_ros.actions.Node(package='ublox_gps',
                                              executable='ublox_gps_node',
                                              remappings=[
-                                                ('/ublox_gps_node/fix','/gnss/fix'),
-                                                ('/ublox_gps_node/fix_velocity','/gnss/fix_velocity'),
+                                                ('/ublox_gps_node/fix','/gnss/fix_raw'),
+                                                ('/ublox_gps_node/fix_velocity','/gnss/fix_raw_velocity'),
                                                 ('/ublox_gps_node/navpvt','/gnss/navpvt')
                                             ],
                                              output='both',

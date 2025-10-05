@@ -36,6 +36,8 @@ install(DIRECTORY
   config
   launch
   models
+  urdf
+  scan_mode
   DESTINATION share/${PROJECT_NAME}/
 )
 

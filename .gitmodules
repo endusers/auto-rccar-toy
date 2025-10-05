@@ -1,6 +1,6 @@
-[submodule "env/foxy-official-01"]
-	path = env/foxy-official-01
-	url = https://github.com/endusers/foxy-official-01.git
-[submodule "env/humble-official-01"]
-	path = env/humble-official-01
-	url = https://github.com/endusers/humble-official-01.git
+[submodule "env/ros-foxy-utility"]
+	path = env/ros-foxy-utility
+	url = https://github.com/endusers/ros-foxy-utility.git
+[submodule "env/ros-humble-utility"]
+	path = env/ros-humble-utility
+	url = https://github.com/endusers/ros-humble-utility.git
