@@ -34,4 +34,25 @@ def generate_launch_description():
             ],
             remappings=[('/odometry/filtered','/odometry/local')],
         ),
+
+        Node(
+            package='topic_tools',
+            executable='transform',
+            name='relay_odometry_local_sigma',
+            parameters=[
+                {
+                    'use_sim_time' : use_sim_time,
+                }
+            ],
+            arguments=[
+                '/odometry/local',
+                '/odometry/local_sigma_horizontal',
+                'std_msgs/Float32',
+                'std_msgs.msg.Float32(data=numpy.sqrt(m.pose.covariance[0]+m.pose.covariance[7]))',
+                '--import',
+                'std_msgs',
+                'numpy',
+            ],
+            output='both',
+        ),
     ])

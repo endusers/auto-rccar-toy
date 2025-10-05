@@ -17,12 +17,10 @@
               <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
             </RecoveryNode>
           </Sequence>
-          <Inverter>
-            <IsStuck />
-          </Inverter>
+          <AlwaysSuccess />
         </Fallback>
       </RateController>
-      <RecoveryNode number_of_retries="3" name="NavigateWithReplanningFollowPath">
+      <RecoveryNode number_of_retries="100" name="NavigateWithReplanningFollowPath">
         <FollowPath path="{path}" controller_id="FollowPath"/>
         <Sequence>
           <Wait wait_duration="3" />
