@@ -9,23 +9,37 @@ ekf_filter_global_wo_gnss_node:
     transform_timeout: 0.0
     print_diagnostics: true
     debug: false
+    debug_out_file: /tmp/ekf_global_debug_log.txt
+
+    publish_tf: true
 
     map_frame: map
     odom_frame: odom
     base_link_frame: base_link
     world_frame: map
 
-    pose0: pose/scan_matching
-    pose0_config: [true,  true,  false,
+    odom0: odometry/sm3d
+    odom0_config: [true,  true,  false,
                    false, false, true,
                    false, false, false,
                    false, false, false,
                    false, false, false]
-    pose0_nodelay: false
-    pose0_differential: false
-    pose0_relative: false
-    pose0_queue_size: 10
-    pose0_rejection_threshold: 2.0
+    odom0_nodelay: false
+    odom0_differential: false
+    odom0_relative: false
+    odom0_queue_size: 10
+
+    # pose0: pose/scan_matching
+    # pose0_config: [true,  true,  false,
+    #                false, false, true,
+    #                false, false, false,
+    #                false, false, false,
+    #                false, false, false]
+    # pose0_nodelay: false
+    # pose0_differential: false
+    # pose0_relative: false
+    # pose0_queue_size: 10
+    # pose0_rejection_threshold: 2.0
 
     # imu0: camera/imu
     # imu0_config: [false, false, false,

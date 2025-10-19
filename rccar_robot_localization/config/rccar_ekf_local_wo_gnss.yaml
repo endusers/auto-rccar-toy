@@ -1,6 +1,6 @@
 # For parameter descriptions, please refer to the template parameter files for each node.
 
-ekf_filter_local_node:
+ekf_filter_local_wo_gnss_node:
   ros__parameters:
     frequency: 30.0
     sensor_timeout: 0.1
@@ -9,6 +9,7 @@ ekf_filter_local_node:
     transform_timeout: 0.0
     print_diagnostics: true
     debug: false
+    debug_out_file: /tmp/ekf_local_debug_log.txt
 
     publish_tf: true
 
@@ -25,16 +26,17 @@ ekf_filter_local_node:
                    false, false, false]
     odom0_nodelay: false
     odom0_differential: false
-    odom0_relative: true
+    odom0_relative: false
     odom0_queue_size: 10
 
-    # imu0: lidar/imu
+    # imu0: bno055/imu
+    # # imu0: camera/imu
     # imu0_config: [false, false, false,
     #               false, false, true,
     #               false, false, false,
     #               false, false, true,
     #               false, false, false]
-    # imu0_nodelay: false
+    # imu0_nodelay: true
     # imu0_differential: false
     # imu0_relative: false
     # imu0_queue_size: 10

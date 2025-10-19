@@ -23,6 +23,6 @@
       use_odom: false
       use_imu: false
       enable_debug: true
-      global_frame_id: map
+      global_frame_id: base_link
       odom_frame_id: odom
-      base_frame_id: pcl_pose
+      base_frame_id: sm3d_init

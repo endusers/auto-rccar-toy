@@ -19,6 +19,8 @@ import lifecycle_msgs.msg
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
+    use_sim_time = LaunchConfiguration('use_sim_time')
+
     map_file = LaunchConfiguration('map')
 
     declare_map_pcd_cmd = DeclareLaunchArgument(
@@ -38,12 +40,13 @@ def generate_launch_description():
         namespace='',
         package='pcl_localization_ros2',
         executable='pcl_localization_node',
-        parameters=[localization_param_dir, {'map_path' : map_file}],
+        parameters=[localization_param_dir, {'map_path' : map_file}, {"use_sim_time": use_sim_time},],
         remappings=[
             ('/velodyne_points','/lidar/points_raw_PointCloud2'),
             # ('/velodyne_points','/cloud_registered'),
             # ('/velodyne_points','/lidar/velodyne_points'),
-            ('/imu', '/camera/imu'),
+            # ('/imu', '/camera/imu'),
+            ('/imu', '/bno055/imu'),
             ('/map', '/map/pcl_localization'),
             ('/pcl_pose', '/pose/scan_matching')
         ],
@@ -85,6 +88,49 @@ def generate_launch_description():
         )
     )
 
+    relay_odometry_sm3d_node = Node(
+        package='topic_tools',
+        executable='relay_field',
+        name='relay_odometry_sm3d_pose',
+        parameters=[
+            {
+                'use_sim_time' : use_sim_time,
+            }
+        ],
+        arguments=[
+            '/pose/scan_matching',
+            '/odometry/sm3d_raw',
+            'nav_msgs/Odometry',
+            '{header: m.header, pose: m.pose}',
+        ],
+        output='both',
+    )
+
+    remap_odometry_sm3d_node = Node(
+        package='odometry_frame_remap',
+        executable='odometry_frame_remap',
+        name='odometry_sm3d_frame_remap_node',
+        parameters=[
+            {
+                'use_sim_time' : use_sim_time,
+                'new_frame_id' : 'odom',
+                'new_child_frame_id' : 'base_link',
+                'publish_tf' : False,
+                'enable_transform' : False,
+                'enable_override_covariance' : True,
+                'override_covariance_xyz' : [0.0225, 0.0225, 0.0225],
+                'override_covariance_rpy' : [0.000625, 0.000625, 0.000625],
+                'override_covariance_vxvyvz' : [0.0, 0.0, 0.0],
+                'override_covariance_wxwywz' : [0.0, 0.0, 0.0],
+            }
+        ],
+        remappings=[
+            ('/odom/in','/odometry/sm3d_raw'),
+            ('/odom/out','/odometry/sm3d'),
+        ],
+        output='both',
+    )
+
     ld = launch.LaunchDescription()
 
     ld.add_action(declare_map_pcd_cmd)
@@ -93,5 +139,8 @@ def generate_launch_description():
 
     ld.add_action(pcl_localization)
     ld.add_action(to_inactive)
+
+    ld.add_action(relay_odometry_sm3d_node)
+    ld.add_action(remap_odometry_sm3d_node)
 
     return ld

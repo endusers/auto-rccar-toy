@@ -114,6 +114,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time': use_sim_time,
+            'use_gnss': use_gnss,
         }.items(),
         condition = IfCondition( use_lidar )
     )
