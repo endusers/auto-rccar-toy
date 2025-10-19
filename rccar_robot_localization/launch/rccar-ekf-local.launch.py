@@ -10,7 +10,7 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    use_sim_time = LaunchConfiguration('use_sim_time')
 
     robot_localization_dir = get_package_share_directory('rccar_robot_localization')
     parameters_file_dir = os.path.join(robot_localization_dir, 'config')

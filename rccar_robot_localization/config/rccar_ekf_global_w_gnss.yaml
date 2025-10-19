@@ -1,6 +1,6 @@
 # For parameter descriptions, please refer to the template parameter files for each node.
 
-ekf_filter_global_gnss_node:
+ekf_filter_global_w_gnss_node:
   ros__parameters:
     frequency: 30.0
     sensor_timeout: 0.1
@@ -9,6 +9,7 @@ ekf_filter_global_gnss_node:
     transform_timeout: 0.0
     print_diagnostics: true
     debug: false
+    debug_out_file: /tmp/ekf_global_gnss_debug_log.txt
 
     publish_tf: false
 
@@ -27,6 +28,17 @@ ekf_filter_global_gnss_node:
     odom0_nodelay: false
     odom0_differential: false
     odom0_relative: false
+
+    # odom1: odometry/local
+    # odom1_config: [true,  true,  false,
+    #                false, false, true,
+    #                true,  true,  false,
+    #                false, false, true,
+    #                false, false, false]
+    # odom1_queue_size: 10
+    # odom1_nodelay: true
+    # odom1_differential: false
+    # odom1_relative: false
 
     odom1: odometry/local
     odom1_config: [true,  true,  false,

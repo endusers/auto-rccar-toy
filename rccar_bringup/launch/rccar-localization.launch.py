@@ -25,7 +25,6 @@ def generate_launch_description():
     use_lidar = LaunchConfiguration('use_lidar')
     use_3d_matching = LaunchConfiguration('use_3d_matching')
     use_2d_matching = LaunchConfiguration('use_2d_matching')
-    use_gnss_fix = LaunchConfiguration('use_gnss_fix')
     map_pcd = LaunchConfiguration('map_pcd')
     map_posegraph = LaunchConfiguration('map_posegraph')
 
@@ -63,12 +62,6 @@ def generate_launch_description():
         'use_2d_matching',
         default_value='false',
         description='Use 2d scan matching if true'
-    )
-
-    declare_use_gnss_fix_cmd = DeclareLaunchArgument(
-        'use_gnss_fix',
-        default_value='true',
-        description='Use gnss fix if true'
     )
 
     declare_map_pcd_cmd = DeclareLaunchArgument(
@@ -165,22 +158,8 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time': use_sim_time,
+            'use_gnss': use_gnss,
         }.items(),
-        condition = IfCondition( OrSubstitution( use_2d_matching, use_3d_matching ) )
-    )
-
-    included_ekf_global_gnss_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(
-                get_package_share_directory( 'rccar_robot_localization' ),
-                'launch',
-                'rccar-ekf-global-gnss.launch.py'
-            )
-        ),
-        launch_arguments={
-            'use_sim_time': use_sim_time,
-        }.items(),
-        condition = IfCondition( use_gnss_fix )
     )
 
     delayed_ekf_local_launch = TimerAction(
@@ -198,11 +177,6 @@ def generate_launch_description():
         actions=[included_ekf_global_launch]
     )
 
-    delayed_ekf_global_gnss_launch = TimerAction(
-        period = 25.0,
-        actions=[included_ekf_global_gnss_launch]
-    )
-
     return LaunchDescription([
         declare_use_sim_time_cmd,
         declare_use_gnss_cmd,
@@ -210,7 +184,6 @@ def generate_launch_description():
         declare_use_lidar_cmd,
         declare_use_3d_matching_cmd,
         declare_use_2d_matching_cmd,
-        declare_use_gnss_fix_cmd,
         declare_map_pcd_cmd,
         declare_map_posegraph_cmd,
         included_navsat_transform_launch,
@@ -218,10 +191,8 @@ def generate_launch_description():
         delayed_ekf_local_launch,
         delayed_pcl_launch,
         delayed_ekf_global_launch,
-        delayed_ekf_global_gnss_launch,
         # included_ekf_local_launch,
         # included_pcl_localization_launch,
         # included_slam_toolbox_launch,
         # included_ekf_global_launch,
-        # included_ekf_global_gnss_launch,
     ])
