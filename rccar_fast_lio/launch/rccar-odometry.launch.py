@@ -55,6 +55,10 @@ def generate_launch_description():
                 'new_child_frame_id' : 'base_link',
                 'publish_tf' : False,
                 'enable_transform' : False,
+                'scale_covariance_xyz' : [1e4, 1e4, 1e4],
+                'scale_covariance_rpy' : [1e4, 1e4, 1e4],
+                'scale_covariance_vxvyvz' : [1e3, 1e3, 1e3],
+                'scale_covariance_wxwywz' : [1e3, 1e3, 1e3],
             }
         ],
         remappings=[
@@ -63,6 +67,7 @@ def generate_launch_description():
         ],
         output='both',
     )
+
     fast_lio_node = Node(
         package='fast_lio',
         executable='fastlio_mapping',
@@ -79,11 +84,33 @@ def generate_launch_description():
         ],
         output='both',
     )
+
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
         arguments=['-d', rviz_cfg],
         condition=IfCondition(rviz_use)
+    )
+
+    relay_odom_sigma_node = Node(
+        package='topic_tools',
+        executable='transform',
+        name='relay_odometry_lidar_sigma',
+        parameters=[
+            {
+                'use_sim_time' : use_sim_time,
+            }
+        ],
+        arguments=[
+            '/odometry/lidar',
+            '/odometry/lidar_sigma_horizontal',
+            'std_msgs/Float32',
+            'std_msgs.msg.Float32(data=numpy.sqrt(m.pose.covariance[0]+m.pose.covariance[7]))',
+            '--import',
+            'std_msgs',
+            'numpy',
+        ],
+        output='both',
     )
 
     ld = LaunchDescription()
@@ -96,5 +123,6 @@ def generate_launch_description():
     ld.add_action(odom_frame_remap_node)
     ld.add_action(fast_lio_node)
     ld.add_action(rviz_node)
+    ld.add_action(relay_odom_sigma_node)
 
     return ld

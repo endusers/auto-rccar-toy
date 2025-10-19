@@ -9,6 +9,15 @@
     <param name="new_child_frame_id" value="base_link"/>
     <param name="publish_tf" value="false"/>
     <param name="enable_transform" value="false"/>
+    <param name="enable_override_covariance" value="false"/>
+    <param name="override_covariance_xyz" value="[0.0, 0.0, 0.0]"/>
+    <param name="override_covariance_rpy" value="[0.0, 0.0, 0.0]"/>
+    <param name="override_covariance_vxvyvz" value="[0.0, 0.0, 0.0]"/>
+    <param name="override_covariance_wxwywz" value="[0.0, 0.0, 0.0]"/>
+    <param name="scale_covariance_xyz" value="[1.0, 1.0, 1.0]"/>
+    <param name="scale_covariance_rpy" value="[1.0, 1.0, 1.0]"/>
+    <param name="scale_covariance_vxvyvz" value="[1.0, 1.0, 1.0]"/>
+    <param name="scale_covariance_wxwywz" value="[1.0, 1.0, 1.0]"/>
     <remap from="odom/in" to="odometry_raw"/>
     <remap from="odom/out" to="odometry"/>
   </node>

@@ -4,8 +4,8 @@
  * @brief       odometry_frame_remap
  * @note        なし
  * 
- * @version     1.1.2
- * @date        2025/09/28
+ * @version     1.2.0
+ * @date        2025/10/19
  * 
  * @copyright   (C) 2025 Motoyuki Endo
  */
@@ -23,6 +23,16 @@ class OdometryFrameRemap : public rclcpp::Node
 		std::string new_child_frame_id_;
 		bool publish_tf_;
 		bool enable_transform_;
+
+		bool enable_override_covariance_;
+		std::vector<double> override_covariance_xyz_;
+		std::vector<double> override_covariance_rpy_;
+		std::vector<double> override_covariance_vxvyvz_;
+		std::vector<double> override_covariance_wxwywz_;
+		std::vector<double> scale_covariance_xyz_;
+		std::vector<double> scale_covariance_rpy_;
+		std::vector<double> scale_covariance_vxvyvz_;
+		std::vector<double> scale_covariance_wxwywz_;
 
 		rclcpp::TimerBase::SharedPtr timer_;
 
