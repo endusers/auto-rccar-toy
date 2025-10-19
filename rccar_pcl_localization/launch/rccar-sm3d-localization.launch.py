@@ -13,6 +13,7 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import LifecycleNode
 from launch_ros.actions import Node
+from launch.conditions import IfCondition, UnlessCondition
 
 import lifecycle_msgs.msg
 
@@ -20,8 +21,21 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
+    use_gnss = LaunchConfiguration('use_gnss')
 
     map_file = LaunchConfiguration('map')
+
+    declare_use_sim_time_cmd = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='false',
+        description='Use simulation (Gazebo) clock if true'
+    )
+
+    declare_use_gnss_cmd = DeclareLaunchArgument(
+        'use_gnss',
+        default_value='true',
+        description='Use gnss if true'
+    )
 
     declare_map_pcd_cmd = DeclareLaunchArgument(
         'map',
@@ -106,7 +120,15 @@ def generate_launch_description():
         output='both',
     )
 
-    remap_odometry_sm3d_node = Node(
+    override_covariance_param = {
+        'enable_override_covariance' : True,
+        'override_covariance_xyz' : [0.0225, 0.0225, 0.0225],
+        'override_covariance_rpy' : [0.000625, 0.000625, 0.000625],
+        'override_covariance_vxvyvz' : [0.0, 0.0, 0.0],
+        'override_covariance_wxwywz' : [0.0, 0.0, 0.0],
+    }
+
+    remap_odometry_sm3d_w_gnss_node = Node(
         package='odometry_frame_remap',
         executable='odometry_frame_remap',
         name='odometry_sm3d_frame_remap_node',
@@ -117,18 +139,37 @@ def generate_launch_description():
                 'new_child_frame_id' : 'base_link',
                 'publish_tf' : False,
                 'enable_transform' : False,
-                'enable_override_covariance' : True,
-                'override_covariance_xyz' : [0.0225, 0.0225, 0.0225],
-                'override_covariance_rpy' : [0.000625, 0.000625, 0.000625],
-                'override_covariance_vxvyvz' : [0.0, 0.0, 0.0],
-                'override_covariance_wxwywz' : [0.0, 0.0, 0.0],
-            }
+            },
+            override_covariance_param,
         ],
         remappings=[
             ('/odom/in','/odometry/sm3d_raw'),
             ('/odom/out','/odometry/sm3d'),
         ],
         output='both',
+        condition = IfCondition( use_gnss )
+    )
+
+    remap_odometry_sm3d_wo_gnss_node = Node(
+        package='odometry_frame_remap',
+        executable='odometry_frame_remap',
+        name='odometry_sm3d_frame_remap_node',
+        parameters=[
+            {
+                'use_sim_time' : use_sim_time,
+                'new_frame_id' : 'map',
+                'new_child_frame_id' : 'odom',
+                'publish_tf' : False,
+                'enable_transform' : False,
+            },
+            override_covariance_param,
+        ],
+        remappings=[
+            ('/odom/in','/odometry/sm3d_raw'),
+            ('/odom/out','/odometry/sm3d'),
+        ],
+        output='both',
+        condition = UnlessCondition( use_gnss )
     )
 
     ld = launch.LaunchDescription()
@@ -141,6 +182,7 @@ def generate_launch_description():
     ld.add_action(to_inactive)
 
     ld.add_action(relay_odometry_sm3d_node)
-    ld.add_action(remap_odometry_sm3d_node)
+    ld.add_action(remap_odometry_sm3d_w_gnss_node)
+    ld.add_action(remap_odometry_sm3d_wo_gnss_node)
 
     return ld

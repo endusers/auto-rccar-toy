@@ -119,31 +119,33 @@ def generate_launch_description():
         condition = IfCondition( use_lidar )
     )
 
-    included_pcl_localization_launch = IncludeLaunchDescription(
+    included_sm3d_localization_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
                 get_package_share_directory( 'rccar_pcl_localization' ),
                 'launch',
-                'rccar-pcl-localization.launch.py'
+                'rccar-sm3d-localization.launch.py'
             )
         ),
         launch_arguments={
             'use_sim_time': use_sim_time,
+            'use_gnss': use_gnss,
             'map': map_pcd,
         }.items(),
         condition = IfCondition( use_3d_matching )
     )
 
-    included_slam_toolbox_launch = IncludeLaunchDescription(
+    included_sm2d_localization_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
                 get_package_share_directory( 'rccar_slam_toolbox' ),
                 'launch',
-                'rccar-localization.launch.py'
+                'rccar-sm2d-localization.launch.py'
             )
         ),
         launch_arguments={
             'use_sim_time': use_sim_time,
+            'use_gnss': use_gnss,
             'map': map_posegraph,
         }.items(),
         condition = IfCondition( use_2d_matching )
@@ -168,9 +170,9 @@ def generate_launch_description():
         actions=[included_ekf_local_launch]
     )
 
-    delayed_pcl_launch = TimerAction(
+    delayed_sm_launch = TimerAction(
         period = 15.0,
-        actions=[included_pcl_localization_launch, included_slam_toolbox_launch]
+        actions=[included_sm3d_localization_launch, included_sm2d_localization_launch]
     )
 
     delayed_ekf_global_launch = TimerAction(
@@ -190,10 +192,10 @@ def generate_launch_description():
         included_navsat_transform_launch,
         included_fast_lio_odometry_launch,
         delayed_ekf_local_launch,
-        delayed_pcl_launch,
+        delayed_sm_launch,
         delayed_ekf_global_launch,
         # included_ekf_local_launch,
-        # included_pcl_localization_launch,
-        # included_slam_toolbox_launch,
+        # included_sm3d_localization_launch,
+        # included_sm2d_localization_launch,
         # included_ekf_global_launch,
     ])
