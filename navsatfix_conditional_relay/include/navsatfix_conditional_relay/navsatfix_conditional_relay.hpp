@@ -4,8 +4,8 @@
  * @brief       navsatfix_conditional_relay
  * @note        なし
  * 
- * @version     1.2.0
- * @date        2025/09/28
+ * @version     1.3.0
+ * @date        2025/10/19
  * 
  * @copyright   (C) 2025 Motoyuki Endo
  */
@@ -30,6 +30,12 @@ class NavSatFixConditionalRelay : public rclcpp::Node
 		double_t override_covariance_east_;
 		double_t override_covariance_north_;
 		double_t override_covariance_up_;
+		double_t restore_covariance_sigma_threshold_;
+		double_t restore_covariance_duration_;
+
+		bool is_override_;
+		bool is_restore_checking_;
+		rclcpp::Time tim_restore_;
 
 		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr sub_parameter_;
 		rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr subscriber_;
