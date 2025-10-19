@@ -16,6 +16,9 @@ def generate_launch_description():
     # map_posegraph_file = os.path.join(get_package_share_directory('rccar_navigation2'), 'map', 'smalltown', 'map')
     map_posegraph_file = os.path.join(get_package_share_directory('rccar_navigation2'), 'map', 'cafe', 'map')
 
+    wait_for_datum = 'false'
+    datum = '[35.362979, 137.193920, 0.0]'
+
     use_sim_time = LaunchConfiguration('use_sim_time')
     use_gnss = LaunchConfiguration('use_gnss')
     use_camera = LaunchConfiguration('use_camera')
@@ -88,6 +91,8 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time': use_sim_time,
+            'wait_for_datum' : wait_for_datum,
+            'datum' : datum,
         }.items(),
         condition = IfCondition( use_gnss )
     )

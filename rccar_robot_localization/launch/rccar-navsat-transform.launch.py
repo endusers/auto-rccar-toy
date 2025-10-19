@@ -10,13 +10,27 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    use_sim_time = LaunchConfiguration('use_sim_time')
+    wait_for_datum = LaunchConfiguration('wait_for_datum')
+    datum = LaunchConfiguration('datum')
 
     return LaunchDescription([
         DeclareLaunchArgument(
             'use_sim_time',
             default_value='false',
             description='Use simulation (Gazebo) clock if true'
+        ),
+
+        DeclareLaunchArgument(
+            'wait_for_datum',
+            default_value='false',
+            description='Wait for datum if true'
+        ),
+
+        DeclareLaunchArgument(
+            'datum',
+            default_value='[55.944904, -3.186693, 0.0]',
+            description='Specify the datum (origin)'
         ),
 
         Node(
@@ -29,6 +43,8 @@ def generate_launch_description():
             parameters=[
                 os.path.join(get_package_share_directory("rccar_robot_localization"), 'config', 'rccar_navsat_transform.yaml'),
                 {"use_sim_time": use_sim_time},
+                {"wait_for_datum": wait_for_datum},
+                {"datum": datum},
             ],
         ),
     ])
