@@ -42,8 +42,8 @@ PointcloudFilter::~PointcloudFilter()
 
 void PointcloudFilter::PointCloudCallback( const sensor_msgs::msg::PointCloud2::SharedPtr msg )
 {
-    pcl::PointCloud<pcl::PointXYZ> cloud;
-    pcl::PointCloud<pcl::PointXYZ> filtered;
+    pcl::PointCloud<pcl::PointXYZI> cloud;
+    pcl::PointCloud<pcl::PointXYZI> filtered;
     sensor_msgs::msg::PointCloud2 output;
 
     pcl::fromROSMsg( *msg, cloud );
