@@ -75,6 +75,7 @@ def generate_launch_description():
             PathJoinSubstitution([config_path, config_file]),
             {
                 'use_sim_time' : use_sim_time,
+                # 'common.lid_topic' : '/lidar/points_fov_filter',
                 'common.lid_topic' : '/lidar/points_raw_PointCloud2',
                 'common.imu_topic' : '/lidar/imu',
             }

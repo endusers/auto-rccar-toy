@@ -1,0 +1,14 @@
+<!-- pointcloud-filter.xml -->
+
+<launch>
+  <arg name="use_sim_time" default="false"/>
+
+  <node pkg="pointcloud_filter" exec="pointcloud_filter" name="pointcloud_filter_node" output="both">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="min_angle_deg" value="-135.0"/>
+    <param name="max_angle_deg" value="135.0"/>
+    <param name="frame_id" value=""/>
+    <remap from="points/in" to="points_raw"/>
+    <remap from="points/out" to="points"/>
+  </node>
+</launch>
