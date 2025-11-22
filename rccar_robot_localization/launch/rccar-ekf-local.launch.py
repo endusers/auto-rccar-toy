@@ -68,6 +68,7 @@ def generate_launch_description():
                 }
             ],
             arguments=[
+                '--wait-for-start',
                 '/odometry/local',
                 '/odometry/local_sigma_horizontal',
                 'std_msgs/Float32',

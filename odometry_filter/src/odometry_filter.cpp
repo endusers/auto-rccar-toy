@@ -273,7 +273,7 @@ void OdometryFilter::InitialPoseCallback( const geometry_msgs::msg::PoseWithCova
 	if( update_yaw_only_ )
 	{
 		x = initial_pose_[0];
-		y = initial_pose_[y];
+		y = initial_pose_[1];
 	}
 
 	std::vector<double_t> update_offset = { x, y, yaw };

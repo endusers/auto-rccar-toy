@@ -21,6 +21,6 @@ def generate_launch_description():
             executable='relay',
             name='cmd_vel_relay',
             output='both',
-            arguments=['cmd_vel_joy', 'cmd_vel'],
+            arguments=['--wait-for-start', 'cmd_vel_joy', 'cmd_vel'],
         )
     ])

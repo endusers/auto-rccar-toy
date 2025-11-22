@@ -112,6 +112,7 @@ def generate_launch_description():
             }
         ],
         arguments=[
+            '--wait-for-start',
             '/pose/scan_matching',
             '/odometry/sm3d_raw',
             'nav_msgs/Odometry',

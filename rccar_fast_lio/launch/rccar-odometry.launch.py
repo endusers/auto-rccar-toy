@@ -102,6 +102,7 @@ def generate_launch_description():
             }
         ],
         arguments=[
+            '--wait-for-start',
             '/odometry/lidar',
             '/odometry/lidar_sigma_horizontal',
             'std_msgs/Float32',
