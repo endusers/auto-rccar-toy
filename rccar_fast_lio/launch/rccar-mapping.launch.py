@@ -55,10 +55,10 @@ def generate_launch_description():
                 'new_child_frame_id' : 'base_link',
                 'publish_tf' : False,
                 'enable_transform' : False,
-                'scale_covariance_xyz' : [1e4, 1e4, 1e4],
-                'scale_covariance_rpy' : [1e4, 1e4, 1e4],
-                'scale_covariance_vxvyvz' : [1e3, 1e3, 1e3],
-                'scale_covariance_wxwywz' : [1e3, 1e3, 1e3],
+                'scale_covariance_xyz' : [1e5, 1e5, 1e5],
+                'scale_covariance_rpy' : [1e5, 1e5, 1e5],
+                'scale_covariance_vxvyvz' : [1e4, 1e4, 1e4],
+                'scale_covariance_wxwywz' : [1e4, 1e4, 1e4],
             }
         ],
         remappings=[
@@ -75,8 +75,8 @@ def generate_launch_description():
             PathJoinSubstitution([config_path, config_file]),
             {
                 'use_sim_time' : use_sim_time,
-                # 'common.lid_topic' : '/lidar/points_fov_filter',
-                'common.lid_topic' : '/lidar/points_raw_PointCloud2',
+                'common.lid_topic' : '/lidar/points_fov_filter',
+                # 'common.lid_topic' : '/lidar/points_raw_PointCloud2',
                 'common.imu_topic' : '/lidar/imu',
             }
         ],

@@ -2,6 +2,7 @@
 
 import os
 import yaml
+import math
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -24,6 +25,7 @@ def launch_setup(context):
     use_gnss = LaunchConfiguration('use_gnss')
     initial_pose_xyz = yaml.safe_load( LaunchConfiguration('initial_pose_xyz').perform(context) )
     initial_pose_rpy = yaml.safe_load( LaunchConfiguration('initial_pose_rpy').perform(context) )
+    initial_pose_yaw_deg = math.degrees(initial_pose_rpy[2])
 
     odom_frame_remap_node = Node(
         package='odometry_frame_remap',
@@ -85,11 +87,12 @@ def launch_setup(context):
                 'odom_frame' : 'odom',
                 'base_link_frame' : 'base_link',
                 'twist_publish_rate' : 1.0,
-                'initial_pose' : [initial_pose_xyz[0], initial_pose_xyz[1], initial_pose_rpy[2]],
+                'initial_pose' : [0.0, 0.0, initial_pose_yaw_deg],
+                # 'initial_pose' : [initial_pose_xyz[0], initial_pose_xyz[1], initial_pose_yaw_deg],
                 'update_yaw_only' : False,
                 'publish_tf' : True,
-                'enable_odom_update_covariance_check' : True,
-                'odom_update_covariance_sigma_threshold' : 0.2,
+                'enable_odom_update_covariance_check' : False,
+                'odom_update_covariance_sigma_threshold' : 0.5,
             }
         ],
         remappings=[

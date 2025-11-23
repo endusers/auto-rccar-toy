@@ -54,10 +54,10 @@ def launch_setup(context):
                 'enable_transform' : True,
                 'transform_target_frame' : 'base_link',
                 'transform_source_frame' : 'camera_init',
-                'scale_covariance_xyz' : [1e4, 1e4, 1e4],
-                'scale_covariance_rpy' : [1e4, 1e4, 1e4],
-                'scale_covariance_vxvyvz' : [1e3, 1e3, 1e3],
-                'scale_covariance_wxwywz' : [1e3, 1e3, 1e3],
+                'scale_covariance_xyz' : [1e5, 1e5, 1e5],
+                'scale_covariance_rpy' : [1e5, 1e5, 1e5],
+                'scale_covariance_vxvyvz' : [1e4, 1e4, 1e4],
+                'scale_covariance_wxwywz' : [1e4, 1e4, 1e4],
             }
         ],
         remappings=[

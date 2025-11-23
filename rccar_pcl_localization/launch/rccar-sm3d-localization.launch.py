@@ -31,8 +31,8 @@ def launch_setup(context):
     initial_pose_orientation = [
         0.0,
         0.0,
-        math.sin( math.radians(initial_pose_rpy[2]) / 2.0 ),
-        math.cos( math.radians(initial_pose_rpy[2]) / 2.0 ),
+        math.sin( initial_pose_rpy[2] / 2.0 ),
+        math.cos( initial_pose_rpy[2] / 2.0 ),
     ]
 
     pcl_localization = launch_ros.actions.LifecycleNode(
@@ -60,7 +60,8 @@ def launch_setup(context):
             # ('/velodyne_points','/lidar/velodyne_points'),
             # ('/imu', '/camera/imu'),
             ('/imu', '/bno055/imu'),
-            ('/map', '/map/pcl_localization'),
+            # ('/map', '/map/pcl_localization'),
+            ('/initial_map', '/map/pcl_localization'),
             ('/pcl_pose', '/pose/scan_matching')
         ],
         output='both')
@@ -135,8 +136,8 @@ def launch_setup(context):
         parameters=[
             {
                 'use_sim_time' : use_sim_time,
-                'new_frame_id' : 'odom',
-                'new_child_frame_id' : 'base_link',
+                'new_frame_id' : 'map',
+                'new_child_frame_id' : '',
                 'publish_tf' : False,
                 'enable_transform' : False,
             },
@@ -158,7 +159,7 @@ def launch_setup(context):
             {
                 'use_sim_time' : use_sim_time,
                 'new_frame_id' : 'map',
-                'new_child_frame_id' : 'odom',
+                'new_child_frame_id' : '',
                 'publish_tf' : False,
                 'enable_transform' : False,
             },

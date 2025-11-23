@@ -84,7 +84,6 @@ void OdometryFrameRemap::OdometryCallback( const nav_msgs::msg::Odometry::Shared
 
 			geometry_msgs::msg::PoseStamped in_pose;
 			in_pose.header = msg->header;
-			in_pose.header.frame_id = transform_source_frame_;
 			in_pose.pose = msg->pose.pose;
 
 			geometry_msgs::msg::PoseStamped out_pose;
