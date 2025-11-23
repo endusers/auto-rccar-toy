@@ -4,8 +4,8 @@
  * @brief       odometry_frame_remap
  * @note        なし
  * 
- * @version     1.2.0
- * @date        2025/10/19
+ * @version     1.3.0
+ * @date        2025/11/23
  * 
  * @copyright   (C) 2025 Motoyuki Endo
  */
@@ -24,6 +24,8 @@ OdometryFrameRemap::OdometryFrameRemap()
 	new_child_frame_id_ = this->declare_parameter<std::string>( "new_child_frame_id", "base_link" );
 	publish_tf_ = this->declare_parameter<bool>( "publish_tf", false );
 	enable_transform_ = this->declare_parameter<bool>( "enable_transform", false );
+	transform_target_frame_ = this->declare_parameter<std::string>( "transform_target_frame", "map" );
+	transform_source_frame_ = this->declare_parameter<std::string>( "transform_source_frame", "odom" );
 
 	enable_override_covariance_ = this->declare_parameter<bool>( "enable_override_covariance", false );
 	override_covariance_xyz_ = this->declare_parameter<std::vector<double>>( "override_covariance_xyz", default_override );
@@ -78,10 +80,11 @@ void OdometryFrameRemap::OdometryCallback( const nav_msgs::msg::Odometry::Shared
 		try
 		{
 			geometry_msgs::msg::TransformStamped transform;
-			transform = tf_buffer_->lookupTransform( new_frame_id_, msg->header.frame_id, tf2::TimePointZero );
+			transform = tf_buffer_->lookupTransform( transform_target_frame_, transform_source_frame_, tf2::TimePointZero );
 
 			geometry_msgs::msg::PoseStamped in_pose;
 			in_pose.header = msg->header;
+			in_pose.header.frame_id = transform_source_frame_;
 			in_pose.pose = msg->pose.pose;
 
 			geometry_msgs::msg::PoseStamped out_pose;
@@ -152,14 +155,16 @@ void OdometryFrameRemap::UpdateParameters( const rcl_interfaces::msg::ParameterE
 		this->get_parameter( "new_child_frame_id", new_child_frame_id_ );
 		this->get_parameter( "publish_tf", publish_tf_ );
 		this->get_parameter( "enable_transform", enable_transform_ );
-		this->get_parameter( "enable_override_covariance_", enable_override_covariance_ );
-		this->get_parameter( "override_covariance_xyz_", override_covariance_xyz_ );
-		this->get_parameter( "override_covariance_rpy_", override_covariance_rpy_ );
-		this->get_parameter( "override_covariance_vxvyvz_", override_covariance_vxvyvz_ );
-		this->get_parameter( "override_covariance_wxwywz_", override_covariance_wxwywz_ );
-		this->get_parameter( "scale_covariance_xyz_", scale_covariance_xyz_ );
-		this->get_parameter( "scale_covariance_rpy_", scale_covariance_rpy_ );
-		this->get_parameter( "scale_covariance_vxvyvz_", scale_covariance_vxvyvz_ );
-		this->get_parameter( "scale_covariance_wxwywz_", scale_covariance_wxwywz_ );
+		this->get_parameter( "transform_target_frame", transform_target_frame_ );
+		this->get_parameter( "transform_source_frame", transform_source_frame_ );
+		this->get_parameter( "enable_override_covariance", enable_override_covariance_ );
+		this->get_parameter( "override_covariance_xyz", override_covariance_xyz_ );
+		this->get_parameter( "override_covariance_rpy", override_covariance_rpy_ );
+		this->get_parameter( "override_covariance_vxvyvz", override_covariance_vxvyvz_ );
+		this->get_parameter( "override_covariance_wxwywz", override_covariance_wxwywz_ );
+		this->get_parameter( "scale_covariance_xyz", scale_covariance_xyz_ );
+		this->get_parameter( "scale_covariance_rpy", scale_covariance_rpy_ );
+		this->get_parameter( "scale_covariance_vxvyvz", scale_covariance_vxvyvz_ );
+		this->get_parameter( "scale_covariance_wxwywz", scale_covariance_wxwywz_ );
 	}
 }

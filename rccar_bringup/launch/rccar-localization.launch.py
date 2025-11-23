@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 import os
+import yaml
+
 from ament_index_python.packages import get_package_share_directory
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument,IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -16,10 +19,19 @@ def generate_launch_description():
     # map_posegraph_file = os.path.join(get_package_share_directory('rccar_navigation2'), 'map', 'smalltown', 'map')
     map_posegraph_file = os.path.join(get_package_share_directory('rccar_navigation2'), 'map', 'cafe', 'map')
 
-    wait_for_datum = 'false'
-    datum = '[35.362979, 137.193920, 0.0]'
+    initial_pose_file = os.path.join(get_package_share_directory('rccar_bringup'), 'config', 'rccar_initial_pose.yaml')
+
+    with open(initial_pose_file, 'r') as f:
+        initial_pose_config = yaml.safe_load(f)
+
+    wait_for_datum = initial_pose_config['wait_for_datum']
+    datum = initial_pose_config['datum']
+
+    initial_pose_xyz = initial_pose_config['initial_pose_xyz']
+    initial_pose_rpy = initial_pose_config['initial_pose_rpy']
 
     use_sim_time = LaunchConfiguration('use_sim_time')
+    gnss_only = LaunchConfiguration('gnss_only')
     use_gnss = LaunchConfiguration('use_gnss')
     use_camera = LaunchConfiguration('use_camera')
     use_lidar = LaunchConfiguration('use_lidar')
@@ -32,6 +44,12 @@ def generate_launch_description():
         'use_sim_time',
         default_value='false',
         description='Use simulation (Gazebo) clock if true'
+    )
+
+    declare_gnss_only_cmd = DeclareLaunchArgument(
+        'gnss_only',
+        default_value='false',
+        description='Use only gnss if true'
     )
 
     declare_use_gnss_cmd = DeclareLaunchArgument(
@@ -84,8 +102,11 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time': use_sim_time,
+            'gnss_only': gnss_only,
             'wait_for_datum' : wait_for_datum,
             'datum' : datum,
+            'initial_pose_xyz' : initial_pose_xyz,
+            'initial_pose_rpy' : initial_pose_rpy,
         }.items(),
         condition = IfCondition( use_gnss )
     )
@@ -100,6 +121,8 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time': use_sim_time,
+            'initial_pose_xyz' : initial_pose_xyz,
+            'initial_pose_rpy' : initial_pose_rpy,
         }.items(),
         condition = IfCondition( use_lidar )
     )
@@ -115,6 +138,8 @@ def generate_launch_description():
         launch_arguments={
             'use_sim_time': use_sim_time,
             'use_gnss': use_gnss,
+            'initial_pose_xyz' : initial_pose_xyz,
+            'initial_pose_rpy' : initial_pose_rpy,
         }.items(),
         condition = IfCondition( use_lidar )
     )
@@ -131,6 +156,8 @@ def generate_launch_description():
             'use_sim_time': use_sim_time,
             'use_gnss': use_gnss,
             'map': map_pcd,
+            'initial_pose_xyz' : initial_pose_xyz,
+            'initial_pose_rpy' : initial_pose_rpy,
         }.items(),
         condition = IfCondition( use_3d_matching )
     )
@@ -147,6 +174,8 @@ def generate_launch_description():
             'use_sim_time': use_sim_time,
             'use_gnss': use_gnss,
             'map': map_posegraph,
+            'initial_pose_xyz' : initial_pose_xyz,
+            'initial_pose_rpy' : initial_pose_rpy,
         }.items(),
         condition = IfCondition( use_2d_matching )
     )
@@ -162,6 +191,8 @@ def generate_launch_description():
         launch_arguments={
             'use_sim_time': use_sim_time,
             'use_gnss': use_gnss,
+            'initial_pose_xyz' : initial_pose_xyz,
+            'initial_pose_rpy' : initial_pose_rpy,
         }.items(),
     )
 
@@ -182,6 +213,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         declare_use_sim_time_cmd,
+        declare_gnss_only_cmd,
         declare_use_gnss_cmd,
         declare_use_camera_cmd,
         declare_use_lidar_cmd,

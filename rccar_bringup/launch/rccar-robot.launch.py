@@ -15,18 +15,11 @@ def generate_launch_description():
     # model_file = os.path.join(pkg_robot_description, 'models', 'rccar-unimog', 'rccar-unimog.urdf.xacro')
     model_file = os.path.join(pkg_robot_description, 'models', 'rccar-bronco', 'rccar-bronco.urdf.xacro')
 
-    gnss_only = LaunchConfiguration('gnss_only')
     use_gnss = LaunchConfiguration('use_gnss')
     use_camera = LaunchConfiguration('use_camera')
     use_lidar = LaunchConfiguration('use_lidar')
     use_multi_imu = LaunchConfiguration('use_multi_imu')
     model = LaunchConfiguration('model')
-
-    declare_gnss_only_cmd = DeclareLaunchArgument(
-        'gnss_only',
-        default_value='false',
-        description='Use only gnss if true'
-    )
 
     declare_use_gnss_cmd = DeclareLaunchArgument(
         'use_gnss',
@@ -88,9 +81,6 @@ def generate_launch_description():
                 'rccar-gnss.launch.xml'
             )
         ),
-        launch_arguments={
-            'gnss_only': gnss_only,
-        }.items(),
         condition = IfCondition( use_gnss )
     )
 
@@ -159,7 +149,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        declare_gnss_only_cmd,
         declare_use_gnss_cmd,
         declare_use_camera_cmd,
         declare_use_lidar_cmd,

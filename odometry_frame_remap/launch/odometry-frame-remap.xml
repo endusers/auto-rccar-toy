@@ -9,6 +9,8 @@
     <param name="new_child_frame_id" value="base_link"/>
     <param name="publish_tf" value="false"/>
     <param name="enable_transform" value="false"/>
+    <param name="transform_target_frame" value="map"/>
+    <param name="transform_source_frame" value="odom"/>
     <param name="enable_override_covariance" value="false"/>
     <param name="override_covariance_xyz" value="[0.0, 0.0, 0.0]"/>
     <param name="override_covariance_rpy" value="[0.0, 0.0, 0.0]"/>

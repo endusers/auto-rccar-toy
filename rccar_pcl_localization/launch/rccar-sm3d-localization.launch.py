@@ -1,60 +1,59 @@
 import os
+import yaml
+import math
 
-import launch
+from ament_index_python.packages import get_package_share_directory
+
 import launch.actions
 import launch.events
 
-import launch_ros
 import launch_ros.actions
 import launch_ros.events
 
 from launch import LaunchDescription
+from launch.actions import OpaqueFunction
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import LifecycleNode
-from launch_ros.actions import Node
 from launch.conditions import IfCondition, UnlessCondition
+from launch_ros.actions import Node
 
 import lifecycle_msgs.msg
 
-from ament_index_python.packages import get_package_share_directory
 
-def generate_launch_description():
+def launch_setup(context):
+
     use_sim_time = LaunchConfiguration('use_sim_time')
     use_gnss = LaunchConfiguration('use_gnss')
-
     map_file = LaunchConfiguration('map')
-
-    declare_use_sim_time_cmd = DeclareLaunchArgument(
-        'use_sim_time',
-        default_value='false',
-        description='Use simulation (Gazebo) clock if true'
-    )
-
-    declare_use_gnss_cmd = DeclareLaunchArgument(
-        'use_gnss',
-        default_value='true',
-        description='Use gnss if true'
-    )
-
-    declare_map_pcd_cmd = DeclareLaunchArgument(
-        'map',
-        default_value='map.pcd',
-        description='Path for map pcd file to load')
-
-    localization_param_dir = LaunchConfiguration(
-        'localization_param_dir',
-        default=os.path.join(
-            get_package_share_directory('rccar_pcl_localization'),
-            'config',
-            'rccar_pcl_localization.yaml'))
+    initial_pose_xyz = yaml.safe_load( LaunchConfiguration('initial_pose_xyz').perform(context) )
+    initial_pose_rpy = yaml.safe_load( LaunchConfiguration('initial_pose_rpy').perform(context) )
+    initial_pose_orientation = [
+        0.0,
+        0.0,
+        math.sin( math.radians(initial_pose_rpy[2]) / 2.0 ),
+        math.cos( math.radians(initial_pose_rpy[2]) / 2.0 ),
+    ]
 
     pcl_localization = launch_ros.actions.LifecycleNode(
         name='pcl_localization',
         namespace='',
         package='pcl_localization_ros2',
         executable='pcl_localization_node',
-        parameters=[localization_param_dir, {'map_path' : map_file}, {"use_sim_time": use_sim_time},],
+        parameters=[
+            os.path.join(get_package_share_directory("rccar_pcl_localization"), 'config', 'rccar_pcl_localization.yaml'),
+            { 'use_sim_time': use_sim_time },
+            {
+                'map_path' : map_file,
+                'initial_pose_x': initial_pose_xyz[0],
+                'initial_pose_y': initial_pose_xyz[1],
+                'initial_pose_z': initial_pose_xyz[2],
+                'initial_pose_qx': initial_pose_orientation[0],
+                'initial_pose_qy': initial_pose_orientation[1],
+                'initial_pose_qz': initial_pose_orientation[2],
+                'initial_pose_qw': initial_pose_orientation[3],
+            },
+        ],
         remappings=[
             ('/velodyne_points','/lidar/points_raw_PointCloud2'),
             # ('/velodyne_points','/cloud_registered'),
@@ -173,17 +172,55 @@ def generate_launch_description():
         condition = UnlessCondition( use_gnss )
     )
 
-    ld = launch.LaunchDescription()
+    launch_actions = []
 
+    launch_actions.append(from_unconfigured_to_inactive)
+    launch_actions.append(from_inactive_to_active)
+    launch_actions.append(pcl_localization)
+    launch_actions.append(to_inactive)
+    launch_actions.append(relay_odometry_sm3d_node)
+    launch_actions.append(remap_odometry_sm3d_w_gnss_node)
+    launch_actions.append(remap_odometry_sm3d_wo_gnss_node)
+
+    return launch_actions
+
+def generate_launch_description():
+
+    declare_use_sim_time_cmd = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='false',
+        description='Use simulation (Gazebo) clock if true'
+    )
+
+    declare_use_gnss_cmd = DeclareLaunchArgument(
+        'use_gnss',
+        default_value='true',
+        description='Use gnss if true'
+    )
+
+    declare_map_pcd_cmd = DeclareLaunchArgument(
+        'map',
+        default_value='map.pcd',
+        description='Path for map pcd file to load')
+
+    declare_initial_pose_xyz_cmd = DeclareLaunchArgument(
+        'initial_pose_xyz', default_value='["0.0", "0.0", "0.0"]',
+        description='Specify the initial pose (x, y, z)'
+    )
+    declare_initial_pose_rpy_cmd = DeclareLaunchArgument(
+        'initial_pose_rpy', default_value='["0.0", "0.0", "0.0"]',
+        description='Specify the initial pose (roll, pitch, yaw)'
+    )
+
+    deferred_launch_action = OpaqueFunction(function=launch_setup)
+
+    ld = LaunchDescription()
+
+    ld.add_action(declare_use_sim_time_cmd)
+    ld.add_action(declare_use_gnss_cmd)
     ld.add_action(declare_map_pcd_cmd)
-    ld.add_action(from_unconfigured_to_inactive)
-    ld.add_action(from_inactive_to_active)
-
-    ld.add_action(pcl_localization)
-    ld.add_action(to_inactive)
-
-    ld.add_action(relay_odometry_sm3d_node)
-    ld.add_action(remap_odometry_sm3d_w_gnss_node)
-    ld.add_action(remap_odometry_sm3d_wo_gnss_node)
+    ld.add_action(declare_initial_pose_xyz_cmd)
+    ld.add_action(declare_initial_pose_rpy_cmd)
+    ld.add_action(deferred_launch_action)
 
     return ld
