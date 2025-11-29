@@ -65,15 +65,11 @@ void NavSatFixConditionalRelay::GnssCallback( const sensor_msgs::msg::NavSatFix:
 		is_relay = true;
 	}
 
-	sigma_horizontal = std::sqrt( navsatfix.position_covariance[0] + navsatfix.position_covariance[4] );
-	if( sigma_horizontal <= relay_sigma_threshold_ )
-	{
-		is_relay = true;
-	}
-
 	if( enable_covariance_override_ )
 	{
 		is_checking = is_restore_checking_;
+
+		sigma_horizontal = std::sqrt( navsatfix.position_covariance[0] + navsatfix.position_covariance[4] );
 
 		if( sigma_horizontal > override_covariance_sigma_threshold_ )
 		{
@@ -85,7 +81,6 @@ void NavSatFixConditionalRelay::GnssCallback( const sensor_msgs::msg::NavSatFix:
 		{
 			is_restore_checking_ = true;
 		}
-
 
 		if( is_checking != is_restore_checking_ )
 		{
@@ -110,6 +105,12 @@ void NavSatFixConditionalRelay::GnssCallback( const sensor_msgs::msg::NavSatFix:
 			navsatfix.position_covariance[4] = override_covariance_north_;
 			navsatfix.position_covariance[8] = override_covariance_up_;
 		}
+	}
+
+	sigma_horizontal = std::sqrt( navsatfix.position_covariance[0] + navsatfix.position_covariance[4] );
+	if( sigma_horizontal <= relay_sigma_threshold_ )
+	{
+		is_relay = true;
 	}
 
 	if( is_relay )

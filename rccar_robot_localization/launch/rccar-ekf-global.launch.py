@@ -91,8 +91,8 @@ def launch_setup(context):
                 # 'initial_pose' : [initial_pose_xyz[0], initial_pose_xyz[1], initial_pose_yaw_deg],
                 'update_yaw_only' : False,
                 'publish_tf' : True,
-                'enable_odom_update_covariance_check' : False,
-                'odom_update_covariance_sigma_threshold' : 0.5,
+                'enable_odom_update_covariance_check' : True,
+                'odom_update_covariance_sigma_threshold' : 0.2,
             }
         ],
         remappings=[

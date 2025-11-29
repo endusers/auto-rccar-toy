@@ -72,7 +72,7 @@ def generate_launch_description():
 
     declare_use_3d_matching_cmd = DeclareLaunchArgument(
         'use_3d_matching',
-        default_value='false',
+        default_value='true',
         description='Use 3d scan matching if true'
     )
 

@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: MapPointCloud
   - Class: nav2_rviz_plugins/Navigation 2
     Name: Navigation 2
 Visualization Manager:
@@ -222,7 +222,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: AerialMap
-      Object URI: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+      Object URI: https://cyberjapandata.gsi.go.jp/xyz/nendophoto2023/{z}/{x}/{y}.png
       TF tolerance: 0
       Timeout: 0
       Topic:
@@ -232,7 +232,7 @@ Visualization Manager:
         Reliability Policy: Best Effort
         Value: /gnss/fix_raw
       Value: true
-      Zoom: 16
+      Zoom: 18
     - Alpha: 0.699999988079071
       Class: rviz_default_plugins/Map
       Color Scheme: map
@@ -264,16 +264,16 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz_default_plugins/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: ""
+      Color Transformer: FlatColor
       Decay Time: 0
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
+      Max Intensity: 0
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: MapPointCloud
-      Position Transformer: ""
+      Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.009999999776482582

@@ -15,12 +15,13 @@ def generate_launch_description():
             #arguments=["serial", "--dev", "/dev/ttyUSB0", "--baud", "115200"]
             # arguments=["serial", "--dev", "/dev/ttyTHS0", "--baud", "115200"]
             arguments=["serial", "--dev", "/dev/ttyTHS1", "--baud", "115200"]
+            # arguments=["serial", "--dev", "/dev/ttyACM0", "--baud", "115200"]
         ),
         Node(
             package='topic_tools',
             executable='relay',
             name='cmd_vel_relay',
             output='both',
-            arguments=['--wait-for-start', 'cmd_vel_joy', 'cmd_vel'],
+            arguments=['cmd_vel_joy', 'cmd_vel', '--wait-for-start'],
         )
     ])

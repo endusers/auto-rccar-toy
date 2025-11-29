@@ -136,7 +136,7 @@ def launch_setup(context):
         parameters=[
             {
                 'use_sim_time' : use_sim_time,
-                'new_frame_id' : 'map',
+                'new_frame_id' : 'odom',
                 'new_child_frame_id' : '',
                 'publish_tf' : False,
                 'enable_transform' : False,
