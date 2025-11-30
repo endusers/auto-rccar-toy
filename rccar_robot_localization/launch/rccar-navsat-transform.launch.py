@@ -51,7 +51,8 @@ def launch_setup(context):
             }
         ],
         arguments=[
-            initial_pose_xyz_str[0], initial_pose_xyz_str[1], initial_pose_xyz_str[2],
+            '0.0', '0.0', '0.0',
+            # initial_pose_xyz_str[0], initial_pose_xyz_str[1], initial_pose_xyz_str[2],
             initial_pose_rpy_str[0], initial_pose_rpy_str[1], initial_pose_rpy_str[2],
             'base_link', 'gnss_init'
         ],

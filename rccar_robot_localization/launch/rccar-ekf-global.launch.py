@@ -89,10 +89,12 @@ def launch_setup(context):
                 'twist_publish_rate' : 1.0,
                 'initial_pose' : [0.0, 0.0, initial_pose_yaw_deg],
                 # 'initial_pose' : [initial_pose_xyz[0], initial_pose_xyz[1], initial_pose_yaw_deg],
-                'update_yaw_only' : False,
+                'initial_pose_update_yaw_only' : False,
                 'publish_tf' : True,
                 'enable_odom_update_covariance_check' : True,
-                'odom_update_covariance_sigma_threshold' : 0.2,
+                'odom_update_covariance_sigma_threshold' : 0.1,
+                'odom_update_use_odom_to_base' : True,
+                'odom_update_yaw_only' : True,
             }
         ],
         remappings=[

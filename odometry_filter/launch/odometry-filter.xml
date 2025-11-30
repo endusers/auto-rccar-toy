@@ -10,10 +10,12 @@
     <param name="base_link_frame" value="base_link"/>
     <param name="twist_publish_rate" value="1.0"/>
     <param name="initial_pose" value="[0.0, 0.0, 0.0]"/>
-    <param name="update_yaw_only" value="false"/>
+    <param name="initial_pose_update_yaw_only" value="false"/>
     <param name="publish_tf" value="false"/>
     <param name="enable_odom_update_covariance_check" value="true"/>
     <param name="odom_update_covariance_sigma_threshold" value="3.0"/>
+    <param name="odom_update_use_odom_to_base" value="false"/>
+    <param name="odom_update_yaw_only" value="false"/>
     <remap from="odom/in" to="odom/in"/>
     <remap from="odom/out" to="odom/out"/>
     <remap from="odom/out_twist_resampler" to="odom/out_twist_resampler"/>

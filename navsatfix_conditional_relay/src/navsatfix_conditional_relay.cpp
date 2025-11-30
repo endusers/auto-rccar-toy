@@ -51,7 +51,7 @@ NavSatFixConditionalRelay::~NavSatFixConditionalRelay()
 void NavSatFixConditionalRelay::GnssCallback( const sensor_msgs::msg::NavSatFix::SharedPtr msg )
 {
 	auto navsatfix = *msg;
-	bool is_relay = false;
+	bool is_relay = true;
 	double sigma_horizontal = 0.0;
 	bool is_checking = false;
 
@@ -60,9 +60,9 @@ void NavSatFixConditionalRelay::GnssCallback( const sensor_msgs::msg::NavSatFix:
 		navsatfix.status.status = override_status_;
 	}
 
-	if( navsatfix.status.status >= relay_status_threshold_ )
+	if( navsatfix.status.status < relay_status_threshold_ )
 	{
-		is_relay = true;
+		is_relay = false;
 	}
 
 	if( enable_covariance_override_ )
@@ -108,9 +108,9 @@ void NavSatFixConditionalRelay::GnssCallback( const sensor_msgs::msg::NavSatFix:
 	}
 
 	sigma_horizontal = std::sqrt( navsatfix.position_covariance[0] + navsatfix.position_covariance[4] );
-	if( sigma_horizontal <= relay_sigma_threshold_ )
+	if( sigma_horizontal > relay_sigma_threshold_ )
 	{
-		is_relay = true;
+		is_relay = false;
 	}
 
 	if( is_relay )

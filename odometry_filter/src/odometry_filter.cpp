@@ -4,8 +4,8 @@
  * @brief       odometry_filter
  * @note        なし
  * 
- * @version     1.0.0
- * @date        2025/09/28
+ * @version     1.1.0
+ * @date        2025/11/30
  * 
  * @copyright   (C) 2025 Motoyuki Endo
  */
@@ -24,10 +24,12 @@ OdometryFilter::OdometryFilter()
 	base_link_frame_ = this->declare_parameter<std::string>( "base_link_frame", "base_link" );
 	twist_publish_rate_ = this->declare_parameter<double_t>( "twist_publish_rate", 1.0 );
 	initial_pose_ = this->declare_parameter( "initial_pose", default_pose );
-	update_yaw_only_ = this->declare_parameter<bool>( "update_yaw_only", false );
+	initial_pose_update_yaw_only_ = this->declare_parameter<bool>( "initial_pose_update_yaw_only", false );
 	publish_tf_ = this->declare_parameter<bool>( "publish_tf", false );
 	enable_odom_update_covariance_check_ = this->declare_parameter<bool>( "enable_odom_update_covariance_check", false );
 	odom_update_covariance_sigma_threshold_ = this->declare_parameter<double_t>( "odom_update_covariance_sigma_threshold", 3.0 );
+	odom_update_use_odom_to_base_ = this->declare_parameter<bool>( "odom_update_use_odom_to_base", false );
+	odom_update_yaw_only_ = this->declare_parameter<bool>( "odom_update_yaw_only", false );
 
 	tim_twist_publish_ = this->get_clock()->now() + rclcpp::Duration::from_seconds( 1.0 / twist_publish_rate_ );
 	odom_ = nav_msgs::msg::Odometry();
@@ -37,7 +39,9 @@ OdometryFilter::OdometryFilter()
 	SetOffsetTransform();
 
 	is_odom_update_ = false;
+	tf_odom_to_base = {};
 	tf_map_to_odom_ = {};
+	tf_map_to_base_ = {};
 
 	sub_parameter_ = this->create_subscription<rcl_interfaces::msg::ParameterEvent>(
 		"/parameter_events", 10, std::bind( &OdometryFilter::UpdateParameters, this, _1 ) );
@@ -154,18 +158,47 @@ void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr 
 	tf2::Transform map_to_base;
 	tf2::fromMsg( odom.pose.pose, map_to_base );
 
-	tf2::Transform corrected_map_to_base;
-	if( is_odom_update_ )
+	if( !is_odom_update_ )
 	{
-		corrected_map_to_base = map_to_base * offset_tf_;
-	}
-	else
-	{
-		corrected_map_to_base = tf_map_to_odom_ * odom_to_base;
+		tf2::Transform map_to_base_adjust;
+
+		if( odom_update_use_odom_to_base_ )
+		{
+			map_to_base_adjust = odom_to_base;
+		}
+		else
+		{
+			map_to_base_adjust = tf_map_to_odom_ * odom_to_base;
+		}
+
+		if( odom_update_yaw_only_ )
+		{
+			double_t latest_yaw;
+			latest_yaw = tf2::getYaw( map_to_base.getRotation() );
+
+			tf2::Quaternion q;
+			q.setRPY( 0.0, 0.0, latest_yaw );
+
+			tf2::Transform map_to_base_adjust_yaw;
+			map_to_base_adjust_yaw.setOrigin( map_to_base_adjust.getOrigin() );
+			map_to_base_adjust_yaw.setRotation( q );
+
+			map_to_base = map_to_base_adjust_yaw;
+		}
+		else
+		{
+			map_to_base = map_to_base_adjust;
+		}
 	}
 
 	tf2::Transform map_to_odom;
-	map_to_odom = corrected_map_to_base * odom_to_base.inverse();
+	map_to_odom = map_to_base * odom_to_base.inverse();
+
+	tf2::Transform map_to_base_w_offset;
+	map_to_base_w_offset = map_to_base * offset_tf_;
+
+	tf2::Transform map_to_odom_w_offset;
+	map_to_odom_w_offset = map_to_base_w_offset * odom_to_base.inverse();
 
 	{
 		odom.header.stamp = this->get_clock()->now();
@@ -173,7 +206,7 @@ void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr 
 		odom.child_frame_id = base_link_frame_;
 
 		geometry_msgs::msg::Pose corrected_pose;
-		tf2::toMsg( corrected_map_to_base, corrected_pose );
+		tf2::toMsg( map_to_base_w_offset, corrected_pose );
 		odom.pose.pose = corrected_pose;
 	}
 
@@ -181,7 +214,7 @@ void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr 
 	{
 		geometry_msgs::msg::TransformStamped tf_msg;
 
-		tf_msg.transform = tf2::toMsg( map_to_odom );
+		tf_msg.transform = tf2::toMsg( map_to_odom_w_offset );
 
 		tf_msg.header.frame_id = map_frame_;
 		tf_msg.child_frame_id = odom_frame_;
@@ -193,7 +226,10 @@ void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr 
 	pub_odom_->publish( odom );
 
 	odom_ = odom;
+
+	tf_odom_to_base = odom_to_base;
 	tf_map_to_odom_ = map_to_odom;
+	tf_map_to_base_ = map_to_base;
 }
 
 void OdometryFilter::OdometryUpdateCheckCallback( const nav_msgs::msg::Odometry::SharedPtr msg )
@@ -270,7 +306,7 @@ void OdometryFilter::InitialPoseCallback( const geometry_msgs::msg::PoseWithCova
 	double y = corrected_pose.position.y;
 	double yaw = tf2::getYaw( corrected_pose.orientation ) * ( 180 / M_PI );
 
-	if( update_yaw_only_ )
+	if( initial_pose_update_yaw_only_ )
 	{
 		x = initial_pose_[0];
 		y = initial_pose_[1];
@@ -290,10 +326,12 @@ void OdometryFilter::UpdateParameters( const rcl_interfaces::msg::ParameterEvent
 		this->get_parameter( "base_link_frame", base_link_frame_ );
 		this->get_parameter( "twist_publish_rate", twist_publish_rate_ );
 		this->get_parameter( "initial_pose", initial_pose_ );
-		this->get_parameter( "update_yaw_only", update_yaw_only_ );
+		this->get_parameter( "initial_pose_update_yaw_only", initial_pose_update_yaw_only_ );
 		this->get_parameter( "publish_tf", publish_tf_ );
 		this->get_parameter( "enable_odom_update_covariance_check", enable_odom_update_covariance_check_ );
 		this->get_parameter( "odom_update_covariance_sigma_threshold", odom_update_covariance_sigma_threshold_ );
+		this->get_parameter( "odom_update_use_odom_to_base", odom_update_use_odom_to_base_ );
+		this->get_parameter( "odom_update_yaw_only", odom_update_yaw_only_ );
 	}
 
 	for( const auto &param : event->changed_parameters )

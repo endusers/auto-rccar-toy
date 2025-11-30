@@ -4,8 +4,8 @@
  * @brief       odometry_filter
  * @note        なし
  * 
- * @version     1.0.0
- * @date        2025/09/28
+ * @version     1.1.0
+ * @date        2025/11/30
  * 
  * @copyright   (C) 2025 Motoyuki Endo
  */
@@ -28,10 +28,12 @@ class OdometryFilter : public rclcpp::Node
 		std::string base_link_frame_;
 		double_t twist_publish_rate_;
 		std::vector<double> initial_pose_;
-		bool update_yaw_only_;
+		bool initial_pose_update_yaw_only_;
 		bool publish_tf_;
 		bool enable_odom_update_covariance_check_;
 		double_t odom_update_covariance_sigma_threshold_;
+		bool odom_update_use_odom_to_base_;
+		bool odom_update_yaw_only_;
 
 		rclcpp::TimerBase::SharedPtr timer_;
 
@@ -42,7 +44,9 @@ class OdometryFilter : public rclcpp::Node
 		tf2::Transform offset_tf_;
 
 		bool is_odom_update_;
+		tf2::Transform tf_odom_to_base;
 		tf2::Transform tf_map_to_odom_;
+		tf2::Transform tf_map_to_base_;
 
 		rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr sub_parameter_;
 		rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr sub_initialpose_;
