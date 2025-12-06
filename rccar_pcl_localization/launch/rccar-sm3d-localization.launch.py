@@ -60,11 +60,16 @@ def launch_setup(context):
             # ('/velodyne_points','/lidar/velodyne_points'),
             # ('/imu', '/camera/imu'),
             ('/imu', '/bno055/imu'),
-            # ('/map', '/map/pcl_localization'),
-            ('/initial_map', '/map/pcl_localization'),
+            ('/map', '/map/cloud_target'),
+            ('/initial_map', '/map/cloud'),
             ('/pcl_pose', '/pose/scan_matching')
         ],
-        output='both')
+        arguments=[
+            '--ros-args',
+            '--disable-stdout-logs',
+        ],
+        output='both',
+    )
 
     to_inactive = launch.actions.EmitEvent(
         event=launch_ros.events.lifecycle.ChangeState(

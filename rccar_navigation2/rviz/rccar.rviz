@@ -284,7 +284,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /map/pcl_localization
+        Value: /map/cloud
       Use Fixed Frame: true
       Use rainbow: true
       Value: false

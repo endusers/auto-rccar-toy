@@ -31,6 +31,10 @@ OdometryFilter::OdometryFilter()
 	odom_update_use_odom_to_base_ = this->declare_parameter<bool>( "odom_update_use_odom_to_base", false );
 	odom_update_yaw_only_ = this->declare_parameter<bool>( "odom_update_yaw_only", false );
 
+	jump_filter_enable_ = this->declare_parameter<bool>( "jump_filter_enable", true );
+	jump_filter_threshold_distance_ = this->declare_parameter<double_t>( "jump_filter_threshold_distance", 0.5 );
+	jump_filter_alpha_ = this->declare_parameter<double_t>( "jump_filter_alpha", 0.3 );
+
 	tim_twist_publish_ = this->get_clock()->now() + rclcpp::Duration::from_seconds( 1.0 / twist_publish_rate_ );
 	odom_ = nav_msgs::msg::Odometry();
 	odom_.pose.pose.orientation.w = 1.0;
@@ -39,7 +43,7 @@ OdometryFilter::OdometryFilter()
 	SetOffsetTransform();
 
 	is_odom_update_ = false;
-	tf_odom_to_base = {};
+	tf_odom_to_base_ = {};
 	tf_map_to_odom_ = {};
 	tf_map_to_base_ = {};
 
@@ -108,23 +112,36 @@ void OdometryFilter::MainCycle( void )
 
 			double_t angle = q_relative.getAngle();
 
-			double_t vx = dx / dt;
-			double_t vy = dy / dt;
-			double_t vz = dz / dt;
+			if( dt > 1e-9 )
+			{
+				double_t vx = dx / dt;
+				double_t vy = dy / dt;
+				double_t vz = dz / dt;
 
-			double_t wx = axis_x * angle / dt;
-			double_t wy = axis_y * angle / dt;
-			double_t wz = axis_z * angle / dt;
+				double_t wx = axis_x * angle / dt;
+				double_t wy = axis_y * angle / dt;
+				double_t wz = axis_z * angle / dt;
 
+				odom.header.stamp = this->get_clock()->now();
 
-			odom.header.stamp = this->get_clock()->now();
-
-			odom.twist.twist.linear.x = vx;
-			odom.twist.twist.linear.y = vy;
-			odom.twist.twist.linear.z = vz;
-			odom.twist.twist.angular.x = wx;
-			odom.twist.twist.angular.y = wy;
-			odom.twist.twist.angular.z = wz;
+				odom.twist.twist.linear.x = vx;
+				odom.twist.twist.linear.y = vy;
+				odom.twist.twist.linear.z = vz;
+				odom.twist.twist.angular.x = wx;
+				odom.twist.twist.angular.y = wy;
+				odom.twist.twist.angular.z = wz;
+			}
+			else
+			{
+				RCLCPP_WARN( this->get_logger(), "Invalid dt value (%.9f), skipping velocity calculation", dt );
+				odom.header.stamp = this->get_clock()->now();
+				odom.twist.twist.linear.x = 0.0;
+				odom.twist.twist.linear.y = 0.0;
+				odom.twist.twist.linear.z = 0.0;
+				odom.twist.twist.angular.x = 0.0;
+				odom.twist.twist.angular.y = 0.0;
+				odom.twist.twist.angular.z = 0.0;
+			}
 		}
 
 		pub_twist_->publish( odom );
@@ -191,6 +208,17 @@ void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr 
 		}
 	}
 
+	if( jump_filter_enable_ )
+	{
+		double_t jump_distance = GetJumpDistance( map_to_base, tf_map_to_base_ );
+
+		if( jump_distance >= jump_filter_threshold_distance_ )
+		{
+			RCLCPP_WARN( this->get_logger(), "Position jump detected: %.4f m", jump_distance );
+			map_to_base = FilterJumpedTransform( map_to_base, tf_map_to_base_, jump_filter_alpha_ );
+		}
+	}
+
 	tf2::Transform map_to_odom;
 	map_to_odom = map_to_base * odom_to_base.inverse();
 
@@ -227,7 +255,7 @@ void OdometryFilter::OdometryCallback( const nav_msgs::msg::Odometry::SharedPtr 
 
 	odom_ = odom;
 
-	tf_odom_to_base = odom_to_base;
+	tf_odom_to_base_ = odom_to_base;
 	tf_map_to_odom_ = map_to_odom;
 	tf_map_to_base_ = map_to_base;
 }
@@ -249,29 +277,6 @@ void OdometryFilter::OdometryUpdateCheckCallback( const nav_msgs::msg::Odometry:
 	}
 
 	is_odom_update_ = is_update;
-}
-
-void OdometryFilter::SetOffsetTransform( void )
-{
-	double initial_pose_x;
-	double initial_pose_y;
-	double initial_pose_a;
-
-	initial_pose_x = 0.0;
-	initial_pose_y = 0.0;
-	initial_pose_a = 0.0;
-
-	if( initial_pose_.size() == 3 )
-	{
-		initial_pose_x = initial_pose_[0];
-		initial_pose_y = initial_pose_[1];
-		initial_pose_a = initial_pose_[2] * ( M_PI / 180 );
-	}
-
-	tf2::Quaternion q;
-	q.setRPY( 0.0, 0.0, initial_pose_a );
-	offset_tf_.setOrigin( tf2::Vector3( initial_pose_x, initial_pose_y, 0.0 ) );
-	offset_tf_.setRotation( q );
 }
 
 void OdometryFilter::InitialPoseCallback( const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg )
@@ -308,13 +313,73 @@ void OdometryFilter::InitialPoseCallback( const geometry_msgs::msg::PoseWithCova
 
 	if( initial_pose_update_yaw_only_ )
 	{
-		x = initial_pose_[0];
-		y = initial_pose_[1];
+		if( initial_pose_.size() == 3 )
+		{
+			x = initial_pose_[0];
+			y = initial_pose_[1];
+		}
+		else
+		{
+			RCLCPP_ERROR( this->get_logger(), "Invalid initial_pose size (%zu), requires at 3 elements", initial_pose_.size() );
+		}
 	}
 
 	std::vector<double_t> update_offset = { x, y, yaw };
 
-	this->set_parameter( rclcpp::Parameter( "initial_offset", update_offset ) );
+	this->set_parameter( rclcpp::Parameter( "initial_pose", update_offset ) );
+}
+
+void OdometryFilter::SetOffsetTransform( void )
+{
+	double initial_pose_x;
+	double initial_pose_y;
+	double initial_pose_a;
+
+	initial_pose_x = 0.0;
+	initial_pose_y = 0.0;
+	initial_pose_a = 0.0;
+
+	if( initial_pose_.size() == 3 )
+	{
+		initial_pose_x = initial_pose_[0];
+		initial_pose_y = initial_pose_[1];
+		initial_pose_a = initial_pose_[2] * ( M_PI / 180 );
+	}
+	else
+	{
+		RCLCPP_ERROR( this->get_logger(), "Invalid initial_pose size (%zu), requires at 3 elements", initial_pose_.size() );
+	}
+
+	tf2::Quaternion q;
+	q.setRPY( 0.0, 0.0, initial_pose_a );
+	offset_tf_.setOrigin( tf2::Vector3( initial_pose_x, initial_pose_y, 0.0 ) );
+	offset_tf_.setRotation( q );
+}
+
+double_t OdometryFilter::GetJumpDistance( const tf2::Transform& current_tf, const tf2::Transform& previous_tf )
+{
+	tf2::Vector3 current_pos = current_tf.getOrigin();
+	tf2::Vector3 previous_pos = previous_tf.getOrigin();
+
+	double_t dx = current_pos.x() - previous_pos.x();
+	double_t dy = current_pos.y() - previous_pos.y();
+
+	return std::sqrt( dx * dx + dy * dy );
+}
+
+tf2::Transform OdometryFilter::FilterJumpedTransform( const tf2::Transform& current_tf, const tf2::Transform& previous_tf, double_t alpha )
+{
+	tf2::Vector3 current_pos = current_tf.getOrigin();
+	tf2::Vector3 previous_pos = previous_tf.getOrigin();
+
+	double_t filtered_x = previous_pos.x() + alpha * ( current_pos.x() - previous_pos.x() );
+	double_t filtered_y = previous_pos.y() + alpha * ( current_pos.y() - previous_pos.y() );
+	double_t filtered_z = previous_pos.z() + alpha * ( current_pos.z() - previous_pos.z() );
+
+	tf2::Transform filtered_tf = current_tf;
+	filtered_tf.setOrigin( tf2::Vector3( filtered_x, filtered_y, filtered_z ) );
+
+	return filtered_tf;
 }
 
 void OdometryFilter::UpdateParameters( const rcl_interfaces::msg::ParameterEvent::SharedPtr event )
@@ -332,6 +397,9 @@ void OdometryFilter::UpdateParameters( const rcl_interfaces::msg::ParameterEvent
 		this->get_parameter( "odom_update_covariance_sigma_threshold", odom_update_covariance_sigma_threshold_ );
 		this->get_parameter( "odom_update_use_odom_to_base", odom_update_use_odom_to_base_ );
 		this->get_parameter( "odom_update_yaw_only", odom_update_yaw_only_ );
+		this->get_parameter( "jump_filter_enable", jump_filter_enable_ );
+		this->get_parameter( "jump_filter_threshold_distance", jump_filter_threshold_distance_ );
+		this->get_parameter( "jump_filter_alpha", jump_filter_alpha_ );
 	}
 
 	for( const auto &param : event->changed_parameters )

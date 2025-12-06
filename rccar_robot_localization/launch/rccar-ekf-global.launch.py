@@ -95,6 +95,9 @@ def launch_setup(context):
                 'odom_update_covariance_sigma_threshold' : 0.1,
                 'odom_update_use_odom_to_base' : True,
                 'odom_update_yaw_only' : True,
+                'jump_filter_enable' : True,
+                'jump_filter_threshold_distance' : 0.5,
+                'jump_filter_alpha' : 0.3,
             }
         ],
         remappings=[
