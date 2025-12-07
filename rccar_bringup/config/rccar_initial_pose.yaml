@@ -1,0 +1,8 @@
+# rccar_initial_pose.yaml
+
+wait_for_datum: 'false'
+datum: '[35.362979, 137.193920, 0.0]'
+
+initial_pose_xyz: '[0.0, 0.0, 0.0]'
+initial_pose_rpy: '[0.0, 0.0, 0.0]'
+

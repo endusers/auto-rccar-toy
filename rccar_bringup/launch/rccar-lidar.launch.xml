@@ -2,6 +2,7 @@
 
 <launch>
   <arg name="use_sim_time" default="false"/>
+  <arg name="publish_filtered_pointcloud" default="true"/>
 
   <group unless="$(var use_sim_time)">
     <include file="$(find-pkg-share rccar_bringup)/launch/rccar-mid360.launch.py" />
@@ -33,4 +34,15 @@
     <remap from="cloud_in" to="lidar/points_raw_PointCloud2"/>
     <remap from="scan" to="lidar/scan/cloud"/>
   </node>
+
+  <group if="$(var publish_filtered_pointcloud)">
+    <node pkg="pointcloud_filter" exec="pointcloud_filter" name="rccar_pointcloud_filter_node" output="both">
+      <param name="use_sim_time" value="$(var use_sim_time)"/>
+      <param name="min_angle_deg" value="-135.0"/>
+      <param name="max_angle_deg" value="135.0"/>
+      <param name="frame_id" value=""/>
+      <remap from="points/in" to="lidar/points_raw_PointCloud2"/>
+      <remap from="points/out" to="lidar/points_fov_filter"/>
+    </node>
+  </group>
 </launch>
